@@ -1,0 +1,36 @@
+class Program
+{
+	int a[100];
+	int N;
+	void sort()
+	{
+		for i=1, N
+		{
+			for j=1, N
+			{
+				if(a[j] > a[i])
+				{
+					int temp;
+					temp=a[j];
+					a[j]=a[i];
+					a[i]=temp;
+				}
+			}
+		}
+	}
+	void main()
+	{
+		callout("scanf","%d",N);
+		for j=0, N
+		{
+			callout("scanf","%d",a[j]);
+		}
+		sort();
+		for j=0, N
+		{
+			callout("printf","%d",a);
+		}
+
+	}
+}
+

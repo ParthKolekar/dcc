@@ -1,0 +1,50 @@
+class Program
+{
+    int a[100];
+    int j;
+    int tmp;
+
+    int max(int a, int b)
+    {
+        if(a>b)
+        {
+            return a;
+        }
+        else
+        {
+            return b;
+        }
+    }
+
+    int maxsum(int size)
+    {
+        int x;
+        int y;
+        x = a[0];
+        y = a[0];
+        for j = 0, size {
+            x = max (0,x+a[j]);
+            y = max (y,x);
+        }
+        return y;
+    }
+
+    void main() 
+    {
+        int sum; 
+        int ar;
+        sum = callout("get_int");
+        for j=0, N {
+		a[j] = callout("get_int");
+	}
+        
+        
+        ar = maxsum (N);
+
+        for j = 0, N {
+            callout("printf", "%d", a[j]);
+        }
+    }
+}
+
+

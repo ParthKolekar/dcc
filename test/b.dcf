@@ -1,0 +1,23 @@
+// Assuming fibonacci series starts from 1 for n=1
+
+class Program 
+{
+	int fibo(int N)
+	{
+		if(N<2)
+		{
+			return N;
+		}
+		return fibo(N-1) + fibo(N-2);
+
+	}
+	void main()
+	{
+		int n;
+		int a;
+		callout("scanf","%d",n);
+		a=fibo(n);
+		callout("printf","%d",a);
+
+	}
+}
