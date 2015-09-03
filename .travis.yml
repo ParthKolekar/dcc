@@ -1,0 +1,20 @@
+language: cpp
+
+compiler: 
+    - g++
+
+addons:
+    apt:
+        packages:
+            - bison
+            - flex
+
+sudo: false
+
+script:
+    - make 
+
+notifications:
+    email:
+        - parth.kolekar@students.iiit.ac.in
+        - shrenik.jain@research.iiit.ac.in
