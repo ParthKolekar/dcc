@@ -84,12 +84,12 @@ CHAR ([\40-\176]{-}['"\\])|\\n|\\t|\\\\|\\\"|\\\'
     return MODULO;
 }
 
-\! {
-    return NOT;
-}
-
 \!\= {
     return NOTEQUAL;
+}
+
+\! {
+    return NOT;
 }
 
 \<\= {
@@ -108,12 +108,12 @@ CHAR ([\40-\176]{-}['"\\])|\\n|\\t|\\\\|\\\"|\\\'
     return GREATERTHAN;
 }
 
-\= {
-    return EQUAL;
-}
-
 \=\= {
     return EQUALEQUAL;
+}
+
+\= {
+    return EQUAL;
 }
 
 \|\| {

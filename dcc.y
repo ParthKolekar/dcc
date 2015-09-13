@@ -10,8 +10,8 @@
 %}
 
 %union {
-	char *sval;
-	int ival;
+    char *sval;
+    int ival;
     char cval;
 }
 
@@ -62,10 +62,19 @@
 
 %%
 
-program : CLASS IDENTIFIER OPEN_CURLYBRACE CLOSE_CURLYBRACE 
+program : CLASS IDENTIFIER OPEN_CURLYBRACE field_decl_list method_decl_list CLOSE_CURLYBRACE 
         {
             
         }
+
+field_decl_list : field 
+                | field_decl_list field
+                ;
+
+field_decl : type IDENTIFIER SEMICOLON
+           | type IDENTIFIER OPEN_SQUAREBRACKET INT_VALUE CLOSE_SQUAREBRACKET SEMICOLON
+
+
 
 %%
 
