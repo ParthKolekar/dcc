@@ -17,8 +17,10 @@ int main (const int argc, const char ** argv) {
         }
         yyin = infile;
     }
+#ifdef DEBUG
     extern int yydebug;
     yydebug = 1;
+#endif
     do {
         yyparse();
     } while (!feof(yyin));
