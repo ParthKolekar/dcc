@@ -16,6 +16,10 @@ CHAR ([\40-\176]{-}['"\\])|\\n|\\t|\\\\|\\\"|\\\'
 
 %%
 
+\/\/.*\n {
+    line_num++;
+}
+
 \, {
     return COMMA;
 }
@@ -199,10 +203,6 @@ void {
 \'{CHAR}\' {
     yylval.cval = yytext[1];
     return CHAR_VALUE;
-}
-
-\/\/[.*]\n {
-    line_num++;
 }
 
 [\t\ ] {

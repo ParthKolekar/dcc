@@ -55,14 +55,17 @@
 %token RETURN
 %token TRUE
 %token VOID
-%token IDENTIFIER
-%token INT_VALUE
-%token STRING_VALUE
-%token CHAR_VALUE
+%token <sval> IDENTIFIER
+%token <ival> INT_VALUE
+%token <sval> STRING_VALUE
+%token <cval> CHAR_VALUE
 
 %%
 
-program : CLASS IDENTIFIER OPEN_CURLYBRACE field_decl_list method_decl_list CLOSE_CURLYBRACE  {}
+program : CLASS IDENTIFIER OPEN_CURLYBRACE field_decl_list method_decl_list CLOSE_CURLYBRACE 
+        | CLASS IDENTIFIER OPEN_CURLYBRACE field_decl_list CLOSE_CURLYBRACE  {}
+        | CLASS IDENTIFIER OPEN_CURLYBRACE method_decl_list CLOSE_CURLYBRACE {}
+        | CLASS IDENTIFIER OPEN_CURLYBRACE CLOSE_CURLYBRACE {}
         ;
 
 field_decl_list : field_decl {}
@@ -85,11 +88,16 @@ identifier_array_list : identifier_array {}
 identifier_array : IDENTIFIER OPEN_SQUAREBRACKET INT_VALUE CLOSE_SQUAREBRACKET {}
                  ;
 
-method_decl_list : type IDENTIFIER OPEN_PARANTHESIS type_identifier_list CLOSE_PARANTHESIS block {}
-                 | VOID IDENTIFIER OPEN_PARANTHESIS type_identifier_list CLOSE_PARANTHESIS block {}
+method_decl_list : method_decl {}
+                 | method_decl_list method_decl {}
                  ;
 
-type_identifier_list : type_identifier {}
+method_decl : type IDENTIFIER OPEN_PARANTHESIS type_identifier_list CLOSE_PARANTHESIS block {}
+            | VOID IDENTIFIER OPEN_PARANTHESIS type_identifier_list CLOSE_PARANTHESIS block {}
+            ;
+
+type_identifier_list : {}
+                     | type_identifier {}
                      | type_identifier_list COMMA type_identifier {}
                      ;
 
@@ -103,14 +111,19 @@ statement_list : statement {}
                | statement_list statement {}
                ;
 
-var_decl_list : type identifier_list {}
+var_decl_list : {}
+              | var_decl_list var_decl {}
               ;
+
+var_decl : type identifier_list SEMICOLON
+         ;
 
 type : INT {}
      | BOOLEAN {}
      ;
 
-statement : location assign_op expr SEMICOLON {}
+statement : SEMICOLON {}
+          | location assign_op expr SEMICOLON {}
           | method_call SEMICOLON {}
           | IF OPEN_PARANTHESIS expr CLOSE_PARANTHESIS block ELSE block {}
           | IF OPEN_PARANTHESIS expr CLOSE_PARANTHESIS block {}
@@ -130,16 +143,15 @@ assign_op : EQUAL {}
 method_call : method_name OPEN_PARANTHESIS expr_list CLOSE_PARANTHESIS {}
             | CALLOUT OPEN_PARANTHESIS STRING_VALUE COMMA callout_arg_list CLOSE_PARANTHESIS {}
             | CALLOUT OPEN_PARANTHESIS STRING_VALUE CLOSE_PARANTHESIS {}
+            ;
   
-
-expr_list : expr {}
+expr_list : {}
+          | expr {}
           | expr_list COMMA expr {}
-
           ;
 
 callout_arg_list : callout_arg {}
-                 | callout_arg_list COMMA callout_arg {        }
-       
+                 | callout_arg_list COMMA callout_arg {}
                  ;
 
 method_name : IDENTIFIER {}
@@ -164,9 +176,9 @@ callout_arg : expr  {}
             ;
 
 bin_op : arith_op {}
-       | rel_op {       }
-       | eq_op {       }
-       | cond_op {       }
+       | rel_op {}
+       | eq_op {}
+       | cond_op {}
        ;
 
 arith_op : PLUS {}
