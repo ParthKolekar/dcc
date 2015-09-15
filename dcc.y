@@ -107,7 +107,8 @@ type_identifier : type IDENTIFIER {}
 block : OPEN_CURLYBRACE var_decl_list statement_list CLOSE_CURLYBRACE {}
       ;
 
-statement_list : statement {}
+statement_list : {} 
+			   | statement {}
                | statement_list statement {}
                ;
 
