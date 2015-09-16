@@ -1,9 +1,9 @@
 %{
+    #include <iostream>
+    #include <cstdlib>
     #include "dcc.tab.h"
     #define YY_DECL extern "C" int yylex()
     int line_num = 0;
-    #include <iostream>
-    #include <cstdlib>
 %}
 
 %option noyywrap

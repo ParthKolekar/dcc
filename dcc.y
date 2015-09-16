@@ -25,12 +25,10 @@
 %token CLOSE_CURLYBRACE
 %token PLUSPLUS
 %token PLUSEQUAL
-%token PLUS
+%left PLUS MINUS
 %token MINUSMINUS
 %token MINUSEQUAL
-%token MINUS
-%token MULTIPLY
-%token DIVIDE
+%left MULTIPLY DIVIDE
 %token MODULO
 %token NOT
 %token NOTEQUAL
@@ -62,7 +60,7 @@
 
 %%
 
-program : CLASS IDENTIFIER OPEN_CURLYBRACE field_decl_list method_decl_list CLOSE_CURLYBRACE 
+program : CLASS IDENTIFIER OPEN_CURLYBRACE field_decl_list method_decl_list CLOSE_CURLYBRACE {}
         | CLASS IDENTIFIER OPEN_CURLYBRACE field_decl_list CLOSE_CURLYBRACE  {}
         | CLASS IDENTIFIER OPEN_CURLYBRACE method_decl_list CLOSE_CURLYBRACE {}
         | CLASS IDENTIFIER OPEN_CURLYBRACE CLOSE_CURLYBRACE {}
@@ -116,7 +114,7 @@ var_decl_list : {}
               | var_decl_list var_decl {}
               ;
 
-var_decl : type identifier_list SEMICOLON
+var_decl : type identifier_list SEMICOLON {}
          ;
 
 type : INT {}
@@ -222,7 +220,7 @@ bool_literal : TRUE {}
 
 
 void yyerror (const char *s) {
-    std::cerr << "Parse error on line " << line_num << " ! Message : " << s << std::endl;
+    std::cerr << "Parse Error on Line : " << line_num << std::endl << "Message : " << s << std::endl;
     exit(-1);
 }
 
