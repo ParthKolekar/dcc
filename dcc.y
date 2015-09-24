@@ -37,10 +37,6 @@
 %token TRUE
 %token VOID
 
-%token EQUAL 
-%token PLUSEQUAL 
-%token MINUSEQUAL
-
 %nonassoc LESSEQUAL LESSTHAN GREATEREQUAL GREATERTHAN
 
 %left EQUALEQUAL NOTEQUAL
@@ -49,7 +45,8 @@
 %left PLUS MINUS
 %left MULTIPLY DIVIDE MODULO
 
-%precedence NOT UMINUS
+%right NOT UMINUS
+%right EQUAL PLUSEQUAL MINUSEQUAL
 
 %token <sval> IDENTIFIER
 %token <ival> INT_VALUE
