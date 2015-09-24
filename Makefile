@@ -1,10 +1,10 @@
 OBJ = dcc
-override CFLAGS += -O3 -flto -Wall 
+override CFLAGS += -O3 -flto -Wall -DYYERROR_VERBOSE
 PREFIX ?= /usr/local
 BINDIR = $(PREFIX)/bin
 CXX ?= g++
 LEX = flex 
-YACC = bison -d
+YACC = bison -d --report=all --warnings=all
 
 $(OBJ) : $(OBJ).tab.o lex.yy.o main.o
 	$(CXX) $^ -o $@ $(CFLAGS)
@@ -22,7 +22,7 @@ lex.yy.c : $(OBJ).l $(OBJ).tab.c
 	$(LEX) $(OBJ).l
 
 clean :
-	rm -f $(OBJ) lex.yy.c ${OBJ}.tab.c ${OBJ}.tab.h ${OBJ}.tab.o lex.yy.o main.o
+	rm -f $(OBJ) lex.yy.c ${OBJ}.tab.c ${OBJ}.tab.h ${OBJ}.tab.o lex.yy.o main.o dcc.output
 
 all : ${OBJ}
 

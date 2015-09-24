@@ -3,10 +3,10 @@
     #include <cstdlib>
     #include "dcc.tab.h"
     #define YY_DECL extern "C" int yylex()
-    int line_num = 0;
 %}
 
 %option noyywrap
+%option yylineno
 
 DIGIT [0-9]
 ALPHA [a-zA-Z]
@@ -17,7 +17,6 @@ CHAR ([\40-\176]{-}['"\\])|\\n|\\t|\\\\|\\\"|\\\'
 %%
 
 \/\/.*\n {
-    line_num++;
 }
 
 \, {
@@ -52,20 +51,12 @@ CHAR ([\40-\176]{-}['"\\])|\\n|\\t|\\\\|\\\"|\\\'
     return CLOSE_CURLYBRACE;
 }
 
-\+\+ {
-    return PLUSPLUS;
-}
-
 \+\= {
     return PLUSEQUAL;
 }
 
 \+ {
     return PLUS;
-}
-
-\-\- {
-    return MINUSMINUS;
 }
 
 \-\= {
@@ -205,11 +196,7 @@ void {
     return CHAR_VALUE;
 }
 
-[\t\ ] {
-}
-
-\n {
-    line_num++;
+[\t\ \n] {
 }
 
 . {

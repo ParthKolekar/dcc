@@ -4,7 +4,7 @@
     extern "C" int yylex();
     extern "C" int yyparse();
     extern "C" FILE * yyin;
-    extern int line_num;
+    extern int yylineno;
 
     void yyerror(const char *s);
 %}
@@ -23,23 +23,6 @@
 %token CLOSE_SQUAREBRACKET
 %token OPEN_CURLYBRACE
 %token CLOSE_CURLYBRACE
-%token PLUSPLUS
-%token PLUSEQUAL
-%left PLUS MINUS
-%token MINUSMINUS
-%token MINUSEQUAL
-%left MULTIPLY DIVIDE
-%token MODULO
-%token NOT
-%token NOTEQUAL
-%token LESSEQUAL
-%token LESSTHAN
-%token GREATEREQUAL
-%token GREATERTHAN
-%token EQUAL
-%token EQUALEQUAL
-%token OR
-%token AND
 %token BOOLEAN
 %token BREAK
 %token CALLOUT
@@ -53,6 +36,21 @@
 %token RETURN
 %token TRUE
 %token VOID
+
+%token EQUAL 
+%token PLUSEQUAL 
+%token MINUSEQUAL
+
+%nonassoc LESSEQUAL LESSTHAN GREATEREQUAL GREATERTHAN
+
+%left EQUALEQUAL NOTEQUAL
+%left OR
+%left AND
+%left PLUS MINUS
+%left MULTIPLY DIVIDE MODULO
+
+%precedence NOT UMINUS
+
 %token <sval> IDENTIFIER
 %token <ival> INT_VALUE
 %token <sval> STRING_VALUE
@@ -91,11 +89,12 @@ method_decl_list : method_decl {}
                  ;
 
 method_decl : type IDENTIFIER OPEN_PARANTHESIS type_identifier_list CLOSE_PARANTHESIS block {}
+            | type IDENTIFIER OPEN_PARANTHESIS CLOSE_PARANTHESIS block {}    
             | VOID IDENTIFIER OPEN_PARANTHESIS type_identifier_list CLOSE_PARANTHESIS block {}
+            | VOID IDENTIFIER OPEN_PARANTHESIS CLOSE_PARANTHESIS block {}
             ;
 
-type_identifier_list : {}
-                     | type_identifier {}
+type_identifier_list : type_identifier {}
                      | type_identifier_list COMMA type_identifier {}
                      ;
 
@@ -103,14 +102,16 @@ type_identifier : type IDENTIFIER {}
                 ;
 
 block : OPEN_CURLYBRACE var_decl_list statement_list CLOSE_CURLYBRACE {}
+      | OPEN_CURLYBRACE var_decl_list CLOSE_CURLYBRACE {}
+      | OPEN_CURLYBRACE statement_list CLOSE_CURLYBRACE {}
+      | OPEN_CURLYBRACE CLOSE_CURLYBRACE {}
       ;
 
-statement_list : {} 
-			   | statement {}
+statement_list : statement {}
                | statement_list statement {}
                ;
 
-var_decl_list : {}
+var_decl_list : var_decl {}
               | var_decl_list var_decl {}
               ;
 
@@ -140,12 +141,12 @@ assign_op : EQUAL {}
           ;
 
 method_call : method_name OPEN_PARANTHESIS expr_list CLOSE_PARANTHESIS {}
+            | method_name OPEN_PARANTHESIS CLOSE_PARANTHESIS {}
             | CALLOUT OPEN_PARANTHESIS STRING_VALUE COMMA callout_arg_list CLOSE_PARANTHESIS {}
             | CALLOUT OPEN_PARANTHESIS STRING_VALUE CLOSE_PARANTHESIS {}
             ;
   
-expr_list : {}
-          | expr {}
+expr_list : expr {}
           | expr_list COMMA expr {}
           ;
 
@@ -163,64 +164,39 @@ location : IDENTIFIER {}
 expr : location {}
      | method_call {}
      | literal {}
-     | expr bin_op expr {}
-     | MINUS expr {}
+     | expr OR expr {}
+     | expr AND expr {}
+     | expr EQUALEQUAL expr {}
+     | expr NOTEQUAL expr {}
+     | expr LESSTHAN expr {}
+     | expr LESSEQUAL expr {}
+     | expr GREATEREQUAL expr {}
+     | expr GREATERTHAN expr {}
+     | expr PLUS expr {}
+     | expr MINUS expr {}
+     | expr MULTIPLY expr {}
+     | expr DIVIDE expr {}
+     | expr MODULO expr {}
      | NOT expr {}
+     | MINUS expr %prec UMINUS {}
      | OPEN_PARANTHESIS expr CLOSE_PARANTHESIS {}
      ;
 
 callout_arg : expr  {}
             | STRING_VALUE {}
-  
             ;
 
-bin_op : arith_op {}
-       | rel_op {}
-       | eq_op {}
-       | cond_op {}
-       ;
-
-arith_op : PLUS {}
-         | MINUS {}
-         | MULTIPLY {}
-         | DIVIDE {}
-         | MODULO {}
-         ;
-
-rel_op : LESSTHAN {}
-       | GREATERTHAN {}
-       | LESSEQUAL {}
-       | GREATEREQUAL {}
-       ;
-
-eq_op : EQUALEQUAL {}
-      | NOTEQUAL {}
-      ;
-
-cond_op : AND {}
-        | OR {}
+literal : INT_VALUE {}
+        | CHAR_VALUE {}
+        | TRUE {}
+        | FALSE {}
         ;
-
-literal : int_literal {}
-        | char_literal {}
-        | bool_literal {}
-        ;
-
-int_literal : INT_VALUE  {}
-            ;
-
-char_literal : CHAR_VALUE {}
-             ;
-
-bool_literal : TRUE {}
-             | FALSE {}
-             ;
 
 %%
 
 
 void yyerror (const char *s) {
-    std::cerr << "Parse Error on Line : " << line_num << std::endl << "Message : " << s << std::endl;
+    std::cerr << "Parse Error on Line : " << yylineno << std::endl << "Message : " << s << std::endl;
     exit(-1);
 }
 

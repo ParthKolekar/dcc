@@ -33,4 +33,4 @@ dcc
 dcc.tab.c
 dcc.tab.h
 lex.yy.c
-
+dcc.output
