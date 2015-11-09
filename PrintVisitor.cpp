@@ -9,26 +9,43 @@ class PrintVisitor : public Visitor
 public:
 	void visit(ASTProgram* a) {
 		std::cout<<"<program>"<<std::endl;
-		std::cout<<"<field_declarations count =\" "<<(a->getFdl()).size()<<">"<<std::endl;
-		for(auto it = (a->getFdl()).begin() ; it != (a->getFdl()).end(); it++) {
-			(*it)->accept(this);
+		if(a->getFdl() == NULL){
+			std::cout<<"<field_declarations count = \"0\">"<<std::endl;
 		}
-		std::cout<<"</field_declarations>"<<std::endl;
+
+		else{
+			std::cout<<"<field_declarations count =\" "<<(a->getFdl())->size()<<">"<<std::endl;
+			for(auto it = (a->getFdl())->begin() ; it != (a->getFdl())->end(); it++) {
+				(*it)->accept(this);
+			}				
+		}
+		std::cout<<"</method_declarations>"<<std::endl;
+		if(a->getMdl() == NULL){
+			std::cout<<"<method_declarations count = \"0\">"<<std::endl;
+		}
+
+		else{
+			std::cout<<"<method_declarations count =\" "<<(a->getMdl())->size()<<">"<<std::endl;
+			for(auto it = (a->getMdl())->begin() ; it != (a->getMdl())->end(); it++) {
+				(*it)->accept(this);
+			}				
+		}
+		std::cout<<"</method_declarations>"<<std::endl;
 	}
-	void visit(ASTFieldDecl*) {
-		std::cout<<"";
+	void visit(ASTFieldDecl* a) {
+		std::cout<<parseDatatype(a->getType())<<" ";
+		for(auto it = a->begin() ; it != a->end(); it++) {
+				(*it)->accept(this);
+			}
 	}
 	void visit(ASTMethodDecl*) {
 		std::cout<<"";
 	}
-	void visit(ASTIdentifier*) {
-		std::cout<<"";
-	}
 	void visit(ASTVarIdentifier*) {
-		std::cout<<"";
+		std::cout<<" "<<a->getId();
 	}
 	void visit(ASTArrayIdentifier*) {
-		std::cout<<"";
+		std::cout<<" "<<a->getId()<<"["<<a->getSize()<<"]";
 	}
 	void visit(ASTTypeIdentifier*) {
 		std::cout<<"";
@@ -100,5 +117,14 @@ public:
 		std::cout<<"";
 	}
 };
+#ifdef TEST
 
+int main()
+{
+	ASTProgram *obj = new ASTProgram("yolo",NULL,NULL);
+	obj->accept(new PrintVisitor());
+	return 0;
+}
+
+#endif
 #endif
