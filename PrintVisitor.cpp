@@ -34,17 +34,17 @@ public:
 	}
 	void visit(ASTFieldDecl* a) {
 		std::cout<<parseDatatype(a->getType())<<" ";
-		for(auto it = a->begin() ; it != a->end(); it++) {
+		for(auto it = (a->getId_list())->begin() ; it != (a->getId_list())->end(); it++) {
 				(*it)->accept(this);
 			}
 	}
 	void visit(ASTMethodDecl*) {
 		std::cout<<"";
 	}
-	void visit(ASTVarIdentifier*) {
+	void visit(ASTVarIdentifier* a) {
 		std::cout<<" "<<a->getId();
 	}
-	void visit(ASTArrayIdentifier*) {
+	void visit(ASTArrayIdentifier* a) {
 		std::cout<<" "<<a->getId()<<"["<<a->getSize()<<"]";
 	}
 	void visit(ASTTypeIdentifier*) {

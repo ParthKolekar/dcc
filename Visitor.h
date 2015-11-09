@@ -38,7 +38,6 @@ public:
 	virtual void visit(ASTProgram*) = 0;
 	virtual void visit(ASTFieldDecl*) = 0;
 	virtual void visit(ASTMethodDecl*) = 0;
-	virtual void visit(ASTIdentifier*) = 0;
 	virtual void visit(ASTVarIdentifier*) = 0;
 	virtual void visit(ASTArrayIdentifier*) = 0;
 	virtual void visit(ASTTypeIdentifier*) = 0;
