@@ -1,5 +1,6 @@
 %{
     #include <iostream>
+    #include "AST.h"
 
     extern "C" int yylex();
     extern "C" int yyparse();
@@ -7,6 +8,8 @@
     extern int yylineno;
 
     void yyerror(const char *s);
+
+    ASTProgram * program;
 %}
 
 %union {
@@ -49,46 +52,61 @@
 %right EQUAL PLUSEQUAL MINUSEQUAL
 
 %token <sval> IDENTIFIER
+
 %token <ival> INT_VALUE
 %token <sval> STRING_VALUE
 %token <cval> CHAR_VALUE
 
+%type <ASTProgram *> program
+
+%type <ASTFieldDecl *> field_decl
+%type <std::vector<ASTFieldDecl *> *> field_decl_list
+
+%type <std::vector<ASTVarIdentifier *> *> identifier_list
+
+%type <ASTArrayIdentifier *> identifier_array
+%type <std::vector<ASTArrayIdentifier *> *> identifier_array_list
+
+%type <ASTMethodDecl *> method_decl
+%type <ASTTypeIdentifier *> type_identifier
+%type <ASTBlockStatement *> block
+
 %%
 
-program : CLASS IDENTIFIER OPEN_CURLYBRACE field_decl_list method_decl_list CLOSE_CURLYBRACE {}
-        | CLASS IDENTIFIER OPEN_CURLYBRACE field_decl_list CLOSE_CURLYBRACE  {}
-        | CLASS IDENTIFIER OPEN_CURLYBRACE method_decl_list CLOSE_CURLYBRACE {}
-        | CLASS IDENTIFIER OPEN_CURLYBRACE CLOSE_CURLYBRACE {}
+program : CLASS IDENTIFIER OPEN_CURLYBRACE field_decl_list method_decl_list CLOSE_CURLYBRACE { $$ = new ASTProgram($2, $4, $5); }
+        | CLASS IDENTIFIER OPEN_CURLYBRACE field_decl_list CLOSE_CURLYBRACE  { $$ = new ASTProgram($2, null, $4); }
+        | CLASS IDENTIFIER OPEN_CURLYBRACE method_decl_list CLOSE_CURLYBRACE { $$ = new ASTProgram($2, $4, null); }
+        | CLASS IDENTIFIER OPEN_CURLYBRACE CLOSE_CURLYBRACE { $$ = new ASTProgram($2, null, null); }
         ;
 
-field_decl_list : field_decl {}
-                | field_decl_list field_decl {}
+field_decl_list : field_decl { $$ = new std::vector<ASTFieldDecl *>(); $$->push_back($1); }
+                | field_decl_list field_decl { $1->push_back($2); $$ = $1; }
                 ;
 
-field_decl : type identifier_list SEMICOLON {}
-           | type identifier_array_list SEMICOLON {}
+field_decl : type identifier_list SEMICOLON { $$ = new ASTFieldDecl($2, $1); }
+           | type identifier_array_list SEMICOLON { $$ = new ASTFieldDecl($2, $1); }
            ;
 
-identifier_list : IDENTIFIER {}
-                | identifier_list COMMA IDENTIFIER {}
+identifier_list : IDENTIFIER { $$ = new std::vector<ASTVarIdentifier *>(); $$->push_back(new ASTVarIdentifier(std::string($1))); }
+                | identifier_list COMMA IDENTIFIER { $1->push_back(new ASTVarIdentifier(std::string($3))); $$ = $1; }
                 ;
 
 
-identifier_array_list : identifier_array {}
-                      | identifier_array_list COMMA identifier_array {}
+identifier_array_list : identifier_array { $$ = new std::vector<ASTArrayIdentifier *>(); $$->push_back($1); }
+                      | identifier_array_list COMMA identifier_array { $1->push_back($3); $$ = $1; }
                       ;
 
-identifier_array : IDENTIFIER OPEN_SQUAREBRACKET INT_VALUE CLOSE_SQUAREBRACKET {}
+identifier_array : IDENTIFIER OPEN_SQUAREBRACKET INT_VALUE CLOSE_SQUAREBRACKET { $$ = new ASTArrayIdentifier(std::string($1), $3); }
                  ;
 
-method_decl_list : method_decl {}
-                 | method_decl_list method_decl {}
+method_decl_list : method_decl { $$ = new std::vector<ASTMethodDecl *>(); $$->push_back($1); }
+                 | method_decl_list method_decl { $1->push_back($2); $$ = $1; }
                  ;
 
-method_decl : type IDENTIFIER OPEN_PARANTHESIS type_identifier_list CLOSE_PARANTHESIS block {}
-            | type IDENTIFIER OPEN_PARANTHESIS CLOSE_PARANTHESIS block {}    
-            | VOID IDENTIFIER OPEN_PARANTHESIS type_identifier_list CLOSE_PARANTHESIS block {}
-            | VOID IDENTIFIER OPEN_PARANTHESIS CLOSE_PARANTHESIS block {}
+method_decl : type IDENTIFIER OPEN_PARANTHESIS type_identifier_list CLOSE_PARANTHESIS block { $$ = new ASTMethodDecl(std::string($2), $1, $4, $6); }
+            | type IDENTIFIER OPEN_PARANTHESIS CLOSE_PARANTHESIS block { $$ = new ASTMethodDecl(std::string($2), $1, null, $5); }
+            | VOID IDENTIFIER OPEN_PARANTHESIS type_identifier_list CLOSE_PARANTHESIS block { $$ = new ASTMethodDecl(std::string($2), Datatype::void_type, $4, $6); }
+            | VOID IDENTIFIER OPEN_PARANTHESIS CLOSE_PARANTHESIS block { $$ = new ASTMethodDecl(std::string($2), Datatype::void_type, null, $5); }
             ;
 
 type_identifier_list : type_identifier {}
@@ -115,7 +133,7 @@ var_decl_list : var_decl {}
 var_decl : type identifier_list SEMICOLON {}
          ;
 
-type : INT {}
+type : INT { $$ =  }
      | BOOLEAN {}
      ;
 
