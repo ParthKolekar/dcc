@@ -249,6 +249,12 @@ public:
 		this->type = type;
 	}
 	~ASTTypeIdentifier();
+	std::string getId() {
+		return this->id;
+	}
+	Datatype getType() {
+		return this->type;
+	}
 	void accept(Visitor * v) {
 		v->visit(this);
 	}

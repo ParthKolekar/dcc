@@ -38,82 +38,92 @@ public:
 				(*it)->accept(this);
 			}
 	}
-	void visit(ASTMethodDecl*) {
-		std::cout<<"";
-	}
+
 	void visit(ASTVarIdentifier* a) {
 		std::cout<<" "<<a->getId();
 	}
+
 	void visit(ASTArrayIdentifier* a) {
 		std::cout<<" "<<a->getId()<<"["<<a->getSize()<<"]";
 	}
-	void visit(ASTTypeIdentifier*) {
+
+	void visit(ASTMethodDecl* a) {
+		std::cout<<a->getId()<<" "<<parseDatatype(a->getReturnType())<<" ";
+		for(auto it = (a->getArguments())->begin() ; it != (a->getArguments())->end(); it++) {
+				(*it)->accept(this);
+			}
+			/* Block statement is called*/
+		a->getBlock()->accept(this);
+	}
+	void visit(ASTTypeIdentifier* a) {
+		std::cout<<a->getId()<<" "<<parseDatatype(a->getType())<<std::endl;
+	}
+
+	void visit(ASTBlockStatement* a) {
+		std::cout<<"{"<<std::endl;
+		for(auto it = (a->getStmtlist())->begin() ; it != (a->getStmtlist())->end(); it++) {
+				(*it)->accept(this);
+			}
+		std::cout<<"}"<<std::endl;
+	}
+	void visit(ASTLocation* a) {
 		std::cout<<"";
 	}
-	void visit(ASTStatement*) {
+	void visit(ASTExpression* a) {
 		std::cout<<"";
 	}
-	void visit(ASTBlockStatement*) {
+	void visit(ASTAssignmentStatement* a) {
 		std::cout<<"";
 	}
-	void visit(ASTLocation*) {
+	void visit(ASTMethodCall* a) {
 		std::cout<<"";
 	}
-	void visit(ASTExpression*) {
+	void visit(ASTNormalMethod* a) {
 		std::cout<<"";
 	}
-	void visit(ASTAssignmentStatement*) {
+	void visit(ASTCalloutMethod* a) {
 		std::cout<<"";
 	}
-	void visit(ASTMethodCall*) {
+	void visit(ASTIfStatement* a) {
 		std::cout<<"";
 	}
-	void visit(ASTNormalMethod*) {
+	void visit(ASTForStatement* a) {
 		std::cout<<"";
 	}
-	void visit(ASTCalloutMethod*) {
+	void visit(ASTReturnStatement* a) {
 		std::cout<<"";
 	}
-	void visit(ASTIfStatement*) {
+	void visit(ASTVarLocation* a) {
 		std::cout<<"";
 	}
-	void visit(ASTForStatement*) {
+	void visit(ASTArrayLocation* a) {
 		std::cout<<"";
 	}
-	void visit(ASTReturnStatement*) {
+	void visit(ASTContinueStatement* a) {
 		std::cout<<"";
 	}
-	void visit(ASTVarLocation*) {
+	void visit(ASTBreakStatement* a) {
 		std::cout<<"";
 	}
-	void visit(ASTArrayLocation*) {
+	void visit(ASTLiteralExpression* a) {
 		std::cout<<"";
 	}
-	void visit(ASTContinueStatement*) {
+	void visit(ASTIntegerLiteralExpression* a) {
 		std::cout<<"";
 	}
-	void visit(ASTBreakStatement*) {
+	void visit(ASTCharLiteralExpression* a) {
 		std::cout<<"";
 	}
-	void visit(ASTLiteralExpression*) {
+	void visit(ASTTrueLiteralExpression* a) {
 		std::cout<<"";
 	}
-	void visit(ASTIntegerLiteralExpression*) {
+	void visit(ASTFalseLiteralExpression* a) {
 		std::cout<<"";
 	}
-	void visit(ASTCharLiteralExpression*) {
+	void visit(ASTBinaryOperationExpression* a) {
 		std::cout<<"";
 	}
-	void visit(ASTTrueLiteralExpression*) {
-		std::cout<<"";
-	}
-	void visit(ASTFalseLiteralExpression*) {
-		std::cout<<"";
-	}
-	void visit(ASTBinaryOperationExpression*) {
-		std::cout<<"";
-	}
-	void visit(ASTUnaryOperationExpression*) {
+	void visit(ASTUnaryOperationExpression* a) {
 		std::cout<<"";
 	}
 };

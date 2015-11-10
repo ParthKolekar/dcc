@@ -41,7 +41,6 @@ public:
 	virtual void visit(ASTVarIdentifier*) = 0;
 	virtual void visit(ASTArrayIdentifier*) = 0;
 	virtual void visit(ASTTypeIdentifier*) = 0;
-	virtual void visit(ASTStatement*) = 0;
 	virtual void visit(ASTBlockStatement*) = 0;
 	virtual void visit(ASTLocation*) = 0;
 	virtual void visit(ASTExpression*) = 0;
