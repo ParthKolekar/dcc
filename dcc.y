@@ -10,8 +10,37 @@
     extern int yylineno;
 
     void yyerror(const char *s);
-    #define YYSTYPE_IS_DECLARED
 %}
+
+%union {
+    char *sval;
+    int ival;
+    char cval;
+    ASTProgram * program;
+    std::vector<ASTFieldDecl *> * field_decl_list;
+    ASTFieldDecl * field_decl;
+    std::vector<ASTVarIdentifier *> * identifier_list;
+    std::vector<ASTArrayIdentifier *> * identifier_array_list;
+    ASTArrayIdentifier * identifier_array;
+    std::vector<ASTMethodDecl *> * method_decl_list;
+    ASTMethodDecl * method_decl;
+    std::vector<ASTTypeIdentifier *> * type_identifier_list;
+    ASTTypeIdentifier * type_identifier;
+    ASTBlockStatement * block;
+    std::vector<ASTStatement *> * statement_list;
+    std::vector<ASTVarDecl *> * var_decl_list;
+    ASTVarDecl * var_decl;
+    Datatype type;
+    ASTStatement * statement;
+    AssignOp assign_op;
+    ASTMethodCall * method_call;
+    std::vector<ASTExpression *> * expr_list;
+    std::vector<ASTCalloutArg *> * callout_arg_list;
+    ASTLocation * location;
+    ASTExpression * expr;
+    ASTCalloutArg * callout_arg;
+    ASTLiteralExpression * literal;
+}
 
 %token COMMA
 %token SEMICOLON

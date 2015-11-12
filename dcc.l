@@ -1,12 +1,14 @@
 %{
     #include <iostream>
     #include <cstdlib>
+    #include "AST.h"
     #include "dcc.tab.h"
     #define YY_DECL extern "C" int yylex()
 %}
 
 %option noyywrap
 %option yylineno
+%option nounput
 
 DIGIT [0-9]
 ALPHA [a-zA-Z]
