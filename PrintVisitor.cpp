@@ -1,6 +1,8 @@
 #ifndef _PrintVisitor_CPP
 #define _PrintVisitor_CPP
 
+#include <iostream>
+#include <vector>
 #include "AST.h"
 #include "Visitor.h"
 
@@ -34,9 +36,12 @@ public:
 	}
 	void visit(ASTFieldDecl* a) {
 		std::cout<<parseDatatype(a->getType())<<" ";
-		for(auto it = (a->getId_list())->begin() ; it != (a->getId_list())->end(); it++) {
-				(*it)->accept(this);
-			}
+		for(auto it = (a->getVar_id_list())->begin() ; it != (a->getVar_id_list())->end(); it++) {
+			(*it)->accept(this);
+		}
+		for(auto it = (a->getArray_id_list())->begin() ; it != (a->getArray_id_list())->end(); it++) {
+			(*it)->accept(this);
+		}
 	}
 
 	void visit(ASTVarIdentifier* a) {

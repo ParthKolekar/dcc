@@ -104,43 +104,68 @@ typedef union NODE YYSTYPE;
 
 std::string parseBinOp(BinOp op){
 	switch(op){
-		case BinOp::plus_op: return "+";
-		case BinOp::minus_op: return "-";
-		case BinOp::multiply_op: return "*";
-		case BinOp::divide_op: return "/";
-		case BinOp::modulo_op: return "%";
-		case BinOp::lessthan_op: return "<";
-		case BinOp::greaterthan_op: return ">";
-		case BinOp::lessthanequal_op: return "<=";
-		case BinOp::greaterthanequal_op: return ">=";
-		case BinOp::notequal_op: return "!=";
-		case BinOp::and_op: return "&&";
-		case BinOp::or_op: return "||";
+		case BinOp::plus_op: 
+			return "+";
+		case BinOp::minus_op: 
+			return "-";
+		case BinOp::multiply_op: 
+			return "*";
+		case BinOp::divide_op: 
+			return "/";
+		case BinOp::modulo_op: 
+			return "%";
+		case BinOp::lessthan_op: 
+			return "<";
+		case BinOp::greaterthan_op: 
+			return ">";
+		case BinOp::lessequal_op: 
+			return "<=";
+		case BinOp::greaterequal_op: 
+			return ">=";
+		case BinOp::notequal_op: 
+			return "!=";
+		case BinOp::equalequal_op: 
+			return "==";
+		case BinOp::and_op: 
+			return "&&";
+		case BinOp::or_op: 
+			return "||";
 	}
-
+	return "";
 }
 
 std::string parseDatatype(Datatype type){
 	switch(type){
-		case Datatype::int_type: return "int";
-		case Datatype::void_type: return "void";
-		case Datatype::bool_type: return "bool";
+		case Datatype::int_type: 
+			return "int";
+		case Datatype::void_type: 
+			return "void";
+		case Datatype::bool_type: 
+			return "bool";
 	}
+	return "";
 }
 
 std::string parseUnOp(UnOp op){
 	switch(op){
-		case UnOp::minus_op: return "-";
-		case UnOp::not_op: return "!";
+		case UnOp::minus_op: 
+			return "-";
+		case UnOp::not_op: 
+			return "!";
 	}
+	return "";
 }
 
 std::string parseAssignOp(AssignOp op){
 	switch(op){
-		case AssignOp::plus_equal: return "+=";
-		case AssignOp::minus_equal: return "-=";
-		case AssignOp::equal: return "=";
+		case AssignOp::plus_equal: 
+			return "+=";
+		case AssignOp::minus_equal: 
+			return "-=";
+		case AssignOp::equal: 
+			return "=";
 	}
+	return "";
 }
 
 class ASTNode {

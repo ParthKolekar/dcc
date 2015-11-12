@@ -1,7 +1,6 @@
 %{
     #include <iostream>
     #include <cstdlib>
-    #include "AST.h"
     #include "dcc.tab.h"
     #define YY_DECL extern "C" int yylex()
 %}
