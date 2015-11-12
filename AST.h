@@ -1,11 +1,12 @@
 #ifndef _AST_H
 #define _AST_H
-#include <bits/stdc++.h>
+#include <vector>
+#include <string>
 #include "Visitor.h"
 
-class ASTNode;
 class ASTProgram;
 class ASTFieldDecl;
+class ASTVarDecl;
 class ASTIdentifier;
 class ASTVarIdentifier;
 class ASTArrayIdentifier;
@@ -18,6 +19,9 @@ class ASTAssignmentStatement;
 class ASTMethodCall;
 class ASTNormalMethod;
 class ASTCalloutMethod;
+class ASTCalloutArg;
+class ASTStringCalloutArg;
+class ASTExpressionCalloutArg;
 class ASTIfStatement;
 class ASTForStatement;
 class ASTReturnStatement;
@@ -42,9 +46,10 @@ enum class BinOp : char {
 	modulo_op,
 	lessthan_op,
 	greaterthan_op,
-	lessthanequal_op,
-	greaterthanequal_op,
+	lessequal_op,
+	greaterequal_op,
 	notequal_op,
+	equalequal_op,
 	and_op,
 	or_op
 };
@@ -65,6 +70,37 @@ enum class UnOp : char {
 	minus_op,
 	not_op
 };
+
+union NODE {
+	char *sval;
+	int ival;
+    char cval;
+    ASTProgram * program;
+    std::vector<ASTFieldDecl *> * field_decl_list;
+    ASTFieldDecl * field_decl;
+    std::vector<ASTVarIdentifier *> * identifier_list;
+    std::vector<ASTArrayIdentifier *> * identifier_array_list;
+    ASTArrayIdentifier * identifier_array;
+    std::vector<ASTMethodDecl *> * method_decl_list;
+    ASTMethodDecl * method_decl;
+    std::vector<ASTTypeIdentifier *> * type_identifier_list;
+    ASTTypeIdentifier * type_identifier;
+    ASTBlockStatement * block;
+    std::vector<ASTStatement *> * statement_list;
+    std::vector<ASTVarDecl *> * var_decl_list;
+    ASTVarDecl * var_decl;
+    Datatype type;
+    ASTStatement * statement;
+    AssignOp assign_op;
+    ASTMethodCall * method_call;
+    std::vector<ASTExpression *> * expr_list;
+    std::vector<ASTCalloutArg *> * callout_arg_list;
+    ASTLocation * location;
+    ASTExpression * expr;
+    ASTCalloutArg * callout_arg;
+    ASTLiteralExpression * literal;
+};
+typedef union NODE YYSTYPE;
 
 class ASTNode {
 public:
@@ -102,19 +138,50 @@ public:
 class ASTFieldDecl : public ASTNode
 {
 	Datatype type;
-	std::vector<ASTIdentifier *> * id_list;
+	std::vector<ASTVarIdentifier *> * var_id_list;
+	std::vector<ASTArrayIdentifier *> * array_id_list;
 public:
-	ASTFieldDecl(std::vector<ASTIdentifier *> * id_list, Datatype type){
+	ASTFieldDecl(std::vector<ASTVarIdentifier *> * var_id_list, Datatype type){
 		this->type = type;
-		this->id_list = id_list;
+		this->var_id_list = var_id_list;
+		this->array_id_list = NULL;
 	}
-	std::vector<ASTIdentifier *> * getId_list() {
-		return this->id_list;
+	ASTFieldDecl(std::vector<ASTArrayIdentifier *> * array_id_list, Datatype type){
+		this->type = type;
+		this->array_id_list = array_id_list;
+		this->var_id_list = NULL;
+	}
+	std::vector<ASTVarIdentifier *> * getVar_id_list() {
+		return this->var_id_list;
+	}
+	std::vector<ASTArrayIdentifier *> * getArray_id_list() {
+		return this->array_id_list;
 	}
 	Datatype getType() {
 		return this->type;
 	}
 	~ASTFieldDecl();
+	void accept(Visitor * v) {
+		v->visit(this);
+	}
+};
+
+class ASTVarDecl : public ASTNode
+{
+	Datatype type;
+	std::vector<ASTVarIdentifier *> * id_list;
+public:
+	ASTVarDecl(std::vector<ASTVarIdentifier *> * id_list, Datatype type) {
+		this->type = type;
+		this->id_list = id_list;
+	}
+	std::vector<ASTVarIdentifier *> * getId_list() {
+		return this->id_list;
+	}
+	Datatype getType() {
+		return this->type;
+	}
+	~ASTVarDecl();
 	void accept(Visitor * v) {
 		v->visit(this);
 	}
@@ -230,10 +297,15 @@ public:
 
 class ASTBlockStatement : public ASTStatement
 {
+	std::vector<ASTVarDecl *> * id_list;
 	std::vector<ASTStatement *> * stmtlist;
 public:
-	ASTBlockStatement(std::vector<ASTStatement *> * stmtlist) {
+	ASTBlockStatement(std::vector<ASTStatement *> * stmtlist, std::vector<ASTVarDecl *> * id_list) {
 		this->stmtlist = stmtlist;
+		this->id_list = id_list;
+	}
+	std::vector<ASTVarDecl *> * getId_list() {
+		return this->id_list;
 	}
 	std::vector<ASTStatement *> * getStmtlist() {
 		return this->stmtlist;
@@ -282,21 +354,16 @@ class ASTNormalMethod : public ASTMethodCall
 {
 	std::string id;
 	std::vector<ASTExpression *> * arguments;
-	ASTBlockStatement * block;
 public:
-	ASTNormalMethod(std::string id, std::vector<ASTExpression *> * arguments, ASTBlockStatement * block) {
+	ASTNormalMethod(std::string id, std::vector<ASTExpression *> * arguments) {
 		this->id = id;
 		this->arguments = arguments;
-		this->block = block;
 	}
 	std::string getId() {
 		return this->id;
 	}
 	std::vector<ASTExpression *> * getArguments() {
 		return this->arguments;
-	}
-	ASTBlockStatement * getBlock() {
-		return this->block;
 	}
 	~ASTNormalMethod();
 	void accept(Visitor * v) {
@@ -306,24 +373,59 @@ public:
 
 class ASTCalloutMethod : public ASTMethodCall 
 {
-	std::string id;
-	std::vector<ASTExpression *> * arguments;
-	ASTBlockStatement * block;
-	ASTCalloutMethod(std::string id, std::vector<ASTExpression *> * arguments, ASTBlockStatement * block) {
-		this->id = id;
+	std::string method_name;
+	std::vector<ASTCalloutArg *> * arguments;
+public:
+	ASTCalloutMethod(std::string method_name, std::vector<ASTCalloutArg *> * arguments) {
+		this->method_name = method_name;
 		this->arguments = arguments;
-		this->block = block;
 	}
-	std::string getId() {
-		return this->id;
+	std::string getMethod_name() {
+		return this->method_name;
 	}
-	std::vector<ASTExpression *> * getArguments() {
+	std::vector<ASTCalloutArg *> * getArguments() {
 		return this->arguments;
 	}
-	ASTBlockStatement * getBlock() {
-		return this->block;
-	}
 	~ASTCalloutMethod();
+	void accept(Visitor * v) {
+		v->visit(this);
+	}
+};
+
+class ASTCalloutArg : public ASTExpression
+{
+public:
+	ASTCalloutArg();
+	~ASTCalloutArg();
+};
+
+class ASTStringCalloutArg : public ASTCalloutArg 
+{
+	std::string argument;
+public:
+	ASTStringCalloutArg(std::string argument) {
+		this->argument = argument;
+	}
+	std::string getArgument() {
+		return this->argument;
+	}
+	~ASTStringCalloutArg();
+	void accept(Visitor * v) {
+		v->visit(this);
+	}
+};
+
+class ASTExpressionCalloutArg : public ASTCalloutArg 
+{
+	ASTExpression * argument;
+public:
+	ASTExpressionCalloutArg(ASTExpression * argument) {
+		this->argument = argument;
+	}
+	ASTExpression * getArgument() {
+		return this->argument;
+	}
+	~ASTExpressionCalloutArg();
 	void accept(Visitor * v) {
 		v->visit(this);
 	}
@@ -417,7 +519,7 @@ public:
 	}
 };
 
-class ASTLocation : public ASTNode
+class ASTLocation : public ASTExpression
 {
 public:
 	ASTLocation();
@@ -558,6 +660,7 @@ class ASTUnaryOperationExpression : public ASTExpression
 {
 	ASTExpression * expr;
 	UnOp op;
+public:
 	ASTUnaryOperationExpression(ASTExpression * expr, UnOp op) {
 		this->expr = expr;
 		this->op = op;

@@ -1,6 +1,7 @@
 %{
     #include <iostream>
     #include <cstdlib>
+    #include "AST.h"
     #include "dcc.tab.h"
     #define YY_DECL extern "C" int yylex()
 %}
@@ -187,7 +188,7 @@ void {
 }
 
 \"{CHAR}*\" {
-    yylval.sval = strdup(yytext);
+    yylval.sval = strndup(yytext + 1, strlen(yytext) - 2);
     return STRING_VALUE;
 }
 
