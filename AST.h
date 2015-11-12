@@ -102,10 +102,53 @@ union NODE {
 };
 typedef union NODE YYSTYPE;
 
+std::string parseBinOp(BinOp op){
+	switch(op){
+		case BinOp::plus_op: return "+";
+		case BinOp::minus_op: return "-";
+		case BinOp::multiply_op: return "*";
+		case BinOp::divide_op: return "/";
+		case BinOp::modulo_op: return "%";
+		case BinOp::lessthan_op: return "<";
+		case BinOp::greaterthan_op: return ">";
+		case BinOp::lessthanequal_op: return "<=";
+		case BinOp::greaterthanequal_op: return ">=";
+		case BinOp::notequal_op: return "!=";
+		case BinOp::and_op: return "&&";
+		case BinOp::or_op: return "||";
+	}
+
+}
+
+std::string parseDatatype(Datatype type){
+	switch(type){
+		case Datatype::int_type: return "int";
+		case Datatype::void_type: return "void";
+		case Datatype::bool_type: return "bool";
+	}
+}
+
+std::string parseUnOp(UnOp op){
+	switch(op){
+		case UnOp::minus_op: return "-";
+		case UnOp::not_op: return "!";
+	}
+}
+
+std::string parseAssignOp(AssignOp op){
+	switch(op){
+		case AssignOp::plus_equal: return "+=";
+		case AssignOp::minus_equal: return "-=";
+		case AssignOp::equal: return "=";
+	}
+}
+
 class ASTNode {
 public:
-	ASTNode();
-	~ASTNode();
+	ASTNode() {
+	}
+	~ASTNode() {
+	}
 	virtual void accept(Visitor * v) = 0;
 };
 
@@ -273,6 +316,12 @@ public:
 		this->type = type;
 	}
 	~ASTTypeIdentifier();
+	std::string getId() {
+		return this->id;
+	}
+	Datatype getType() {
+		return this->type;
+	}
 	void accept(Visitor * v) {
 		v->visit(this);
 	}
