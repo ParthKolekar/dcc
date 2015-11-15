@@ -36,11 +36,15 @@ public:
     }
     void visit(ASTFieldDecl * node) {
         std::cout<<node->parseDatatype(node->getType())<<" ";
-        for(auto it = (node->getVar_id_list())->begin() ; it != (node->getVar_id_list())->end(); it++) {
-            (*it)->accept(this);
+        if (node->getVar_id_list()) {
+            for(auto it = (node->getVar_id_list())->begin() ; it != (node->getVar_id_list())->end(); it++) {
+                (*it)->accept(this);
+            }   
         }
-        for(auto it = (node->getArray_id_list())->begin() ; it != (node->getArray_id_list())->end(); it++) {
-            (*it)->accept(this);
+        if (node->getArray_id_list()) {
+            for(auto it = (node->getArray_id_list())->begin() ; it != (node->getArray_id_list())->end(); it++) {
+                (*it)->accept(this);
+            }
         }
     }
 
@@ -54,10 +58,12 @@ public:
 
     void visit(ASTMethodDecl * node) {
         std::cout<<node->getId()<<" "<<node->parseDatatype(node->getReturnType())<<" ";
-        for(auto it = (node->getArguments())->begin() ; it != (node->getArguments())->end(); it++) {
-            (*it)->accept(this);
+        if (node->getArguments()) {
+            for(auto it = (node->getArguments())->begin() ; it != (node->getArguments())->end(); it++) {
+                (*it)->accept(this);
+            }
         }
-            /* Block statement is called*/
+        /* Block statement is called*/
         node->getBlock()->accept(this);
     }
     void visit(ASTTypeIdentifier * node) {
