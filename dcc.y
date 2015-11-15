@@ -3,13 +3,14 @@
     #include <string>
     #include <vector>
     #include "AST.h"
-
+    #include "Visitor.h"
     extern "C" int yylex();
     extern "C" int yyparse();
     extern "C" FILE * yyin;
     extern int yylineno;
 
     void yyerror(const char *s);
+    extern ASTProgram * start;
 %}
 
 %union {
@@ -72,8 +73,8 @@
 %left PLUS MINUS
 %left MULTIPLY DIVIDE MODULO
 
-%right NOT UMINUS
-%right EQUAL PLUSEQUAL MINUSEQUAL
+%precedence NOT UMINUS
+%token EQUAL PLUSEQUAL MINUSEQUAL
 
 %token <sval> IDENTIFIER
 
@@ -108,10 +109,10 @@
 
 %%
 
-program : CLASS IDENTIFIER OPEN_CURLYBRACE field_decl_list method_decl_list CLOSE_CURLYBRACE { $$ = new ASTProgram(std::string($2), $4, $5); }
-        | CLASS IDENTIFIER OPEN_CURLYBRACE field_decl_list CLOSE_CURLYBRACE  { $$ = new ASTProgram(std::string($2), $4, NULL); }
-        | CLASS IDENTIFIER OPEN_CURLYBRACE method_decl_list CLOSE_CURLYBRACE { $$ = new ASTProgram(std::string($2), NULL, $4); }
-        | CLASS IDENTIFIER OPEN_CURLYBRACE CLOSE_CURLYBRACE { $$ = new ASTProgram(std::string($2), NULL, NULL); }
+program : CLASS IDENTIFIER OPEN_CURLYBRACE field_decl_list method_decl_list CLOSE_CURLYBRACE { $$ = new ASTProgram(std::string($2), $4, $5); start = $$; }
+        | CLASS IDENTIFIER OPEN_CURLYBRACE field_decl_list CLOSE_CURLYBRACE  { $$ = new ASTProgram(std::string($2), $4, NULL); start = $$; }
+        | CLASS IDENTIFIER OPEN_CURLYBRACE method_decl_list CLOSE_CURLYBRACE { $$ = new ASTProgram(std::string($2), NULL, $4); start = $$; }
+        | CLASS IDENTIFIER OPEN_CURLYBRACE CLOSE_CURLYBRACE { $$ = new ASTProgram(std::string($2), NULL, NULL); start = $$; }
         ;
 
 field_decl_list : field_decl { $$ = new std::vector<ASTFieldDecl *>(); $$->push_back($1); }

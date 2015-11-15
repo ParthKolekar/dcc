@@ -1,10 +1,10 @@
 #ifndef _Visitor_H
 #define _Visitor_H
 
-class ASTProgram;
 class ASTFieldDecl;
 class ASTVarDecl;
 class ASTIdentifier;
+class ASTProgram;
 class ASTVarIdentifier;
 class ASTArrayIdentifier;
 class ASTMethodDecl;

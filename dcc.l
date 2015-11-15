@@ -2,6 +2,7 @@
     #include <iostream>
     #include <cstdlib>
     #include "AST.h"
+    #include "Visitor.h"
     #include "dcc.tab.h"
     #define YY_DECL extern "C" int yylex()
 %}
