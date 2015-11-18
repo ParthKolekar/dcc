@@ -2,6 +2,14 @@
 #define _AST_H
 #include <vector>
 #include <string>
+#include "llvm/Analysis/Verifier.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include <cctype>
+#include <cstdio>
+#include <map>
 #include "Visitor.h"
 
 class ASTProgram;
@@ -37,6 +45,12 @@ class ASTTrueLiteralExpression;
 class ASTFalseLiteralExpression;
 class ASTBinaryOperationExpression;
 class ASTUnaryOperationExpression;
+
+llvm::Value * ErrorV(const char *);
+extern llvm::Module *TheModule;
+extern llvm::IRBuilder<> Builder;
+extern std::map<std::string, llvm::Value*> NamedValues;
+
 
 enum class BinOp : char {
     plus_op,
@@ -171,6 +185,9 @@ public:
     void accept(Visitor * v) {
         v->visit(this);
     }
+    llvm::Function * codeGen() {
+        
+    }
 };
 
 class ASTFieldDecl : public ASTNode
@@ -204,6 +221,9 @@ public:
     void accept(Visitor * v) {
         v->visit(this);
     }
+    virtual llvm::Value * codeGen() {
+        
+    }
 };
 
 class ASTVarDecl : public ASTNode
@@ -227,6 +247,9 @@ public:
     void accept(Visitor * v) {
         v->visit(this);
     }
+    virtual llvm::Value * codeGen() {
+        
+    }
 };
 
 class ASTIdentifier : public ASTNode 
@@ -239,6 +262,7 @@ public:
         
     }
     virtual void accept(Visitor * v) = 0;
+    virtual llvm::Value * codeGen() = 0;
 };
 
 class ASTVarIdentifier : public ASTIdentifier
@@ -256,6 +280,9 @@ public:
     }
     void accept(Visitor * v) {
         v->visit(this);
+    }
+    virtual llvm::Value * codeGen() {
+        
     }
 };
 
@@ -279,6 +306,9 @@ public:
     }
     void accept(Visitor * v) {
         v->visit(this);
+    }
+    virtual llvm::Value * codeGen() {
+        
     }
 };
 
@@ -313,6 +343,9 @@ public:
     void accept(Visitor * v) {
         v->visit(this);
     }
+    virtual llvm::Value * codeGen() {
+        
+    }
 };
 
 class ASTTypeIdentifier : public ASTNode
@@ -336,6 +369,9 @@ public:
     void accept(Visitor * v) {
         v->visit(this);
     }
+    virtual llvm::Value * codeGen() {
+        
+    }
 };
 
 class ASTStatement : public ASTNode 
@@ -348,6 +384,7 @@ public:
         
     }
     virtual void accept(Visitor * v) = 0;
+    virtual llvm::Value * codeGen() = 0;
 };
 
 
@@ -361,6 +398,7 @@ public:
         
     }
     virtual void accept(Visitor * v) = 0;
+    virtual llvm::Value * codeGen() = 0;
 };
 
 class ASTBlockStatement : public ASTStatement
@@ -383,6 +421,9 @@ public:
     }
     void accept(Visitor * v) {
         v->visit(this);
+    }
+    virtual llvm::Value * codeGen() {
+        
     }
 };
 
@@ -412,6 +453,9 @@ public:
     void accept(Visitor * v) {
         v->visit(this);
     }
+    virtual llvm::Value * codeGen() {
+        
+    }
 };
 
 class ASTMethodCall : public ASTStatement, public ASTExpression 
@@ -424,6 +468,7 @@ public:
         
     }
     virtual void accept(Visitor * v) = 0;
+    virtual llvm::Value * codeGen() = 0;
 };
 
 class ASTNormalMethod : public ASTMethodCall 
@@ -447,6 +492,25 @@ public:
     void accept(Visitor * v) {
         v->visit(this);
     }
+    virtual llvm::Value * codeGen() {
+        llvm::Function * CalleF = TheModule->getFunction(id);
+        if (!CalleF) 
+            return ErrorV("Unknown Function Referenced");
+
+        std::vector<llvm::Value *> ArgsV;
+        if (!CalleF->arg_size() && !this->arguments) {
+            return Builder.CreateCall(CalleF, ArgsV, "calltmp");
+        }
+        if (CalleF->arg_size() != this->arguments->size()) 
+            return ErrorV("Not Matching Number of Arguments");
+
+        for (auto it = this->arguments->begin(); it != this->arguments->end(); it++) {
+            ArgsV.push_back((*it)->codeGen());
+            if (ArgsV.back() == 0) 
+                return 0;
+        }
+        return Builder.CreateCall(CalleF, ArgsV, "calltmp");
+    }
 };
 
 class ASTCalloutMethod : public ASTMethodCall 
@@ -469,6 +533,9 @@ public:
     }
     void accept(Visitor * v) {
         v->visit(this);
+    }
+    virtual llvm::Value * codeGen() {
+        
     }
 };
 
@@ -499,6 +566,9 @@ public:
     void accept(Visitor * v) {
         v->visit(this);
     }
+    virtual llvm::Value * codeGen() {
+        
+    }
 };
 
 class ASTExpressionCalloutArg : public ASTCalloutArg 
@@ -516,6 +586,9 @@ public:
     }
     void accept(Visitor * v) {
         v->visit(this);
+    }
+    virtual llvm::Value * codeGen() {
+        
     }
 };
 
@@ -545,6 +618,9 @@ public:
     void accept(Visitor * v) {
         v->visit(this);
     }
+    virtual llvm::Value * codeGen() {
+        
+    }
 };
 
 class ASTForStatement : public ASTStatement 
@@ -573,6 +649,9 @@ public:
     void accept(Visitor * v) {
         v->visit(this);
     }
+    virtual llvm::Value * codeGen() {
+        
+    }
 };
 
 class ASTReturnStatement : public ASTStatement
@@ -591,6 +670,9 @@ public:
     void accept(Visitor * v) {
         v->visit(this);
     }
+    virtual llvm::Value * codeGen() {
+        
+    }
 };
 
 class ASTContinueStatement : public ASTStatement
@@ -605,6 +687,9 @@ public:
     void accept(Visitor * v) {
         v->visit(this);
     }
+    virtual llvm::Value * codeGen() {
+        
+    }
 };
 
 class ASTBreakStatement : public ASTStatement
@@ -617,7 +702,10 @@ public:
         
     }
     void accept(Visitor * v) {
-
+        v->visit(this);
+    }
+    virtual llvm::Value * codeGen() {
+        
     }
 };
 
@@ -649,6 +737,10 @@ public:
     void accept(Visitor * v) {
         v->visit(this);
     }
+    virtual llvm::Value * codeGen() {
+        llvm::Value * V = NamedValues[this->id];
+        return V ? V : ErrorV("Unknown Variable Name");
+    }
 };
 
 class ASTArrayLocation : public ASTLocation
@@ -672,6 +764,9 @@ public:
     void accept(Visitor * v) {
         v->visit(this);
     }
+    virtual llvm::Value * codeGen() {
+
+    }
 };
 
 class ASTLiteralExpression : public ASTExpression
@@ -684,6 +779,7 @@ public:
         
     }
     virtual void accept(Visitor * v) = 0;
+    virtual llvm::Value * codeGen() = 0;
 };
 
 class ASTIntegerLiteralExpression : public ASTLiteralExpression
@@ -701,6 +797,9 @@ public:
     }
     void accept(Visitor * v) {
         v->visit(this);
+    }
+    virtual llvm::Value * codeGen() {
+        return llvm::ConstantInt::get(llvm::getGlobalContext(), llvm::APInt(64, this->value));
     }
 };
 
@@ -720,6 +819,9 @@ public:
     void accept(Visitor * v) {
         v->visit(this);
     }
+    virtual llvm::Value * codeGen() {
+        return llvm::ConstantInt::get(llvm::getGlobalContext(), llvm::APInt(64, this->value));
+    }
 };
 
 class ASTTrueLiteralExpression : public ASTLiteralExpression
@@ -737,6 +839,9 @@ public:
     void accept(Visitor * v) {
         v->visit(this);
     }
+    virtual llvm::Value * codeGen() {
+        return llvm::ConstantInt::get(llvm::getGlobalContext(), llvm::APInt(64, true));
+    }
 };
 
 class ASTFalseLiteralExpression : public ASTLiteralExpression
@@ -753,6 +858,9 @@ public:
     }
     void accept(Visitor * v) {
         v->visit(this);
+    }
+    virtual llvm::Value * codeGen() {
+        return llvm::ConstantInt::get(llvm::getGlobalContext(), llvm::APInt(64, false));   
     }
 };
 
@@ -782,6 +890,42 @@ public:
     void accept(Visitor * v) {
         v->visit(this);
     }
+    virtual llvm::Value * codeGen() {
+        llvm::Value * L = this->left->codeGen();
+        llvm::Value * R = this->right->codeGen();
+
+        if (!L || !R) 
+            return 0;
+
+        switch (this->op) {
+            case BinOp::plus_op: 
+                return Builder.CreateFAdd(L, R, "addtemp");
+            case BinOp::minus_op: 
+                return Builder.CreateFSub(L, R, "subtemp");
+            case BinOp::multiply_op: 
+                return Builder.CreateFMul(L, R, "multemp");
+            case BinOp::divide_op: 
+                return Builder.CreateFDiv(L, R, "divtemp");
+            case BinOp::modulo_op: 
+                return Builder.CreateURem(L, R, "modtemp");
+            case BinOp::lessthan_op: 
+                return Builder.CreateFCmpULT(L, R, "cmptmp");
+            case BinOp::greaterthan_op: 
+                return Builder.CreateFCmpUGT(L, R, "cmptmp");
+            case BinOp::lessequal_op: 
+                return Builder.CreateFCmpULE(L, R, "cmptmp");
+            case BinOp::greaterequal_op: 
+                return Builder.CreateFCmpUGE(L, R, "cmptmp");
+            case BinOp::notequal_op: 
+                return Builder.CreateFCmpUNE(L, R, "cmptmp");
+            case BinOp::equalequal_op: 
+                return Builder.CreateFCmpUEQ(L, R, "cmptmp");
+            case BinOp::and_op: 
+                return Builder.CreateAnd(L, R, "andtemp");
+            case BinOp::or_op: 
+                return Builder.CreateOr(L, R, "ortemp");
+        }
+    }
 };
 
 class ASTUnaryOperationExpression : public ASTExpression
@@ -804,6 +948,9 @@ public:
     }
     void accept(Visitor * v) {
         v->visit(this);
+    }
+    virtual llvm::Value * codeGen() {
+        
     }
 };
 #endif

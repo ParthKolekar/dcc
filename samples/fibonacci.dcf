@@ -18,6 +18,5 @@ class Program
 		callout("scanf","%d",n);
 		a=fibo(n);
 		callout("printf","%d",a);
-
 	}
 }

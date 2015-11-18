@@ -1,12 +1,12 @@
 OBJ = dcc
-override CFLAGS += -O3 -flto -Wall -DYYERROR_VERBOSE -std=c++11
+override CFLAGS += -O3 -flto -Wall -DYYERROR_VERBOSE -std=c++11 `llvm-config --cppflags --libs core jit native` `llvm-config --ldflags`
 PREFIX ?= /usr/local
 BINDIR = $(PREFIX)/bin
 CXX ?= g++
 LEX = flex 
 YACC = bison -d --report=all --warnings=all
 
-$(OBJ) : $(OBJ).tab.o lex.yy.o PrintVisitor.o main.o 
+$(OBJ) : $(OBJ).tab.o lex.yy.o PrintVisitor.o main.o
 	$(CXX) $^ -o $@ $(CFLAGS) 
 
 %.o : %.c 

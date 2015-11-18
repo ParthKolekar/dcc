@@ -9,6 +9,15 @@ extern "C" int yyparse();
 
 ASTProgram * start;
 
+llvm::Module *TheModule;
+llvm::IRBuilder<> Builder(llvm::getGlobalContext());
+std::map<std::string, llvm::Value*> NamedValues;
+
+llvm::Value * ErrorV(const char * error) {
+    std::cerr << error;
+    return 0;
+}
+
 int main (const int argc, const char ** argv) {
     if (argc < 2) {
         yyin = NULL;
@@ -26,11 +35,13 @@ int main (const int argc, const char ** argv) {
     extern int yydebug;
     yydebug = 1;
 #endif
-    do {
-        yyparse();
-    } while (!feof(yyin));
-    PrintVisitor * visitor = new PrintVisitor();
-    visitor->visit(start);
+    if (!yyparse()) {
+        llvm::LLVMContext &Context = llvm::getGlobalContext();
+        TheModule = new llvm::Module("my cool jit", Context);
+        TheModule->dump();
+        // PrintVisitor * visitor = new PrintVisitor();
+        // visitor->visit(start);
+    }
     return 0;
 }
 
