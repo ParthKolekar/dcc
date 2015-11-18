@@ -2,21 +2,13 @@
 #include <cstdio>
 #include "AST.h"
 #include "Visitor.h"
-#include "PrintVisitor.cpp"
+#include "PrintVisitor.h"
+#include "CodeGenVisitor.h"
 
 extern "C" FILE *yyin; 
 extern "C" int yyparse(); 
 
 ASTProgram * start;
-
-llvm::Module *TheModule;
-llvm::IRBuilder<> Builder(llvm::getGlobalContext());
-std::map<std::string, llvm::Value*> NamedValues;
-
-llvm::Value * ErrorV(const char * error) {
-    std::cerr << error;
-    return 0;
-}
 
 int main (const int argc, const char ** argv) {
     if (argc < 2) {
@@ -36,9 +28,8 @@ int main (const int argc, const char ** argv) {
     yydebug = 1;
 #endif
     if (!yyparse()) {
-        llvm::LLVMContext &Context = llvm::getGlobalContext();
-        TheModule = new llvm::Module("my cool jit", Context);
-        TheModule->dump();
+        CodeGenVisitor * visitor = new CodeGenVisitor(start);
+        visitor->codeGen();
         // PrintVisitor * visitor = new PrintVisitor();
         // visitor->visit(start);
     }

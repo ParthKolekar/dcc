@@ -1,5 +1,5 @@
-#ifndef _PrintVisitor_CPP
-#define _PrintVisitor_CPP
+#ifndef _PrintVisitor_H
+#define _PrintVisitor_H
 
 #include <iostream>
 #include <vector>
@@ -9,33 +9,21 @@
 class PrintVisitor : public Visitor
 {
 public:
-    void visit(ASTProgram * node) {
-        // std::cout<<"<program>"<<std::endl;
-        if(node->getFdl() == NULL){
-            // std::cout<<"<field_declarations count = \"0\">"<<std::endl;
-        }
-
-        else{
-            // std::cout<<"<field_declarations count =\" "<<(node->getFdl())->size()<<"\">"<<std::endl;
+    void * visit(ASTProgram * node) {
+        if (node->getFdl()) {
             for(auto it = (node->getFdl())->begin() ; it != (node->getFdl())->end(); it++) {
                 (*it)->accept(this);
             }               
         }
-        // std::cout<<"</field_declarations>"<<std::endl;
-        if(node->getMdl() == NULL){
-            // std::cout<<"<method_declarations count = \"0\">"<<std::endl;
-        }
-
-        else{
-            // std::cout<<"<method_declarations count =\" "<<(node->getMdl())->size()<<"\">"<<std::endl;
+        if (node->getMdl()) {
             for(auto it = (node->getMdl())->begin() ; it != (node->getMdl())->end(); it++) {
                 (*it)->accept(this);
             }               
         }
-        // std::cout<<"</method_declarations>"<<std::endl;
-        // std::cout<<"</program>"<<std::endl;
-    }
-    void visit(ASTFieldDecl * node) {
+        return NULL;
+     }
+
+    void * visit(ASTFieldDecl * node) {
         std::cout<<node->parseDatatype(node->getType())<<" ";
         if (node->getVar_id_list()) {
             for(auto it = (node->getVar_id_list())->begin() ; it != (node->getVar_id_list())->end(); it++) {
@@ -47,17 +35,20 @@ public:
                 (*it)->accept(this);
             }
         }
+        return NULL;
     }
 
-    void visit(ASTVarIdentifier * node) {
+    void * visit(ASTVarIdentifier * node) {
         std::cout<<" "<<node->getId();
+        return NULL;
     }
 
-    void visit(ASTArrayIdentifier * node) {
+    void * visit(ASTArrayIdentifier * node) {
         std::cout<<" "<<node->getId()<<"["<<node->getSize()<<"]";
+        return NULL;
     }
 
-    void visit(ASTMethodDecl * node) {
+    void * visit(ASTMethodDecl * node) {
         std::cout<<node->parseDatatype(node->getReturnType())<<" "<<node->getId()<<" ";
         std::cout<<"(";
         if (node->getArguments()) {
@@ -68,12 +59,15 @@ public:
         std::cout<<")"<<std::endl;
         /* Block statement is called*/
         node->getBlock()->accept(this);
-    }
-    void visit(ASTTypeIdentifier * node) {
-        std::cout<<node->parseDatatype(node->getType())<<" "<<node->getId()<<" ";
+        return NULL;
     }
 
-    void visit(ASTBlockStatement * node) {
+    void * visit(ASTTypeIdentifier * node) {
+        std::cout<<node->parseDatatype(node->getType())<<" "<<node->getId()<<" ";
+        return NULL;
+    }
+
+    void * visit(ASTBlockStatement * node) {
         std::cout<<"{"<<std::endl;
         // std::cout<<"no of statements = ";
         if(node->getStmtlist() && node->getId_list()){
@@ -101,18 +95,23 @@ public:
         std::cout<<std::endl;
         
         std::cout<<"}"<<std::endl;
+        return NULL;
     }
 
-    void visit(ASTAssignmentStatement * node) {
+    void * visit(ASTAssignmentStatement * node) {
         node->getLocation()->accept(this);
         std::cout<<" "<<node->parseAssignOp(node->getOp())<<" ";
         node->getExpr()->accept(this);
         std::cout<<std::endl;
+        return NULL;
     }
-    void visit(ASTMethodCall * node) {
+
+    void * visit(ASTMethodCall * node) {
         std::cout<<""<<std::endl;
+        return NULL;
     }
-    void visit(ASTNormalMethod * node) {
+
+    void * visit(ASTNormalMethod * node) {
         std::cout<<node->getId()<<"(";
         if(node->getArguments()){
             for(auto it = (node->getArguments())->begin() ; it != (node->getArguments())->end(); it++) {
@@ -120,8 +119,10 @@ public:
             }
         }
         std::cout<<")";
+return NULL;
     }
-    void visit(ASTCalloutMethod * node) {
+
+    void * visit(ASTCalloutMethod * node) {
         std::cout<<node->getMethod_name()<<"(";
         if(node->getArguments()){
             for(auto it = (node->getArguments())->begin() ; it != (node->getArguments())->end(); it++) {
@@ -129,88 +130,132 @@ public:
             }
         }
         std::cout<<")"<<std::endl;
+return NULL;
     }
-    void visit(ASTCalloutArg * node) {
+
+    void * visit(ASTCalloutArg * node) {
         
+        return NULL;
     }
-    void visit(ASTStringCalloutArg * node) {
+
+    void * visit(ASTStringCalloutArg * node) {
         std::cout<<node->getArgument();
+        return NULL;
     }
-    void visit(ASTExpressionCalloutArg * node) {
+
+    void * visit(ASTExpressionCalloutArg * node) {
         node->getArgument()->accept(this);
+        return NULL;
     }
-    void visit(ASTIfStatement * node) {
+
+    void * visit(ASTIfStatement * node) {
         std::cout<<"if(";
         node->getCondition()->accept(this);
         std::cout<<")"<<std::endl;
         node->getIf_block()->accept(this);
         if(node->getElse_block())
             node->getElse_block()->accept(this);
+        return NULL;
     }
-    void visit(ASTForStatement * node) {
+
+    void * visit(ASTForStatement * node) {
         node->getInit_condition()->accept(this);
         node->getEnd_condition()->accept(this);
         node->getBlock()->accept(this);
-
+        return NULL;
     }
-    void visit(ASTReturnStatement * node) {
+
+    void * visit(ASTReturnStatement * node) {
         std::cout<<"return ";
         node->getReturn_expr()->accept(this);
+        return NULL;
     }
-    void visit(ASTContinueStatement * node) {
+
+    void * visit(ASTContinueStatement * node) {
         std::cout<<"continue"<<std::endl;
+        return NULL;
     }
-    void visit(ASTBreakStatement * node) {
+
+    void * visit(ASTBreakStatement * node) {
         std::cout<<"break"<<std::endl;
+        return NULL;
     }
-    void visit(ASTLocation * node) {
+
+    void * visit(ASTLocation * node) {
         std::cout<<""<<std::endl;
+        return NULL;
     }
-    void visit(ASTVarLocation * node) {
+
+    void * visit(ASTVarLocation * node) {
         std::cout<<node->getId()<<" ";
+        return NULL;
     }
-    void visit(ASTArrayLocation * node) {
+
+    void * visit(ASTArrayLocation * node) {
         std::cout<<node->getId()<<" ["<<node->getIndex()<<"]";
+        return NULL;
     }
-    void visit(ASTLiteralExpression * node) {
+
+    void * visit(ASTLiteralExpression * node) {
         std::cout<<""<<std::endl;
+        return NULL;
     }
-    void visit(ASTIntegerLiteralExpression * node) {
+
+    void * visit(ASTIntegerLiteralExpression * node) {
         std::cout<<" "<<node->getValue();
+        return NULL;
     }
-    void visit(ASTCharLiteralExpression * node) {
+
+    void * visit(ASTCharLiteralExpression * node) {
         std::cout<<" "<<node->getValue();
+        return NULL;
     }
-    void visit(ASTTrueLiteralExpression * node) {
+
+    void * visit(ASTTrueLiteralExpression * node) {
         std::cout<<" "<<node->getValue();
+        return NULL;
     }
-    void visit(ASTFalseLiteralExpression * node) {
+
+    void * visit(ASTFalseLiteralExpression * node) {
         std::cout<<" "<<node->getValue();
+        return NULL;
     }
-    void visit(ASTBinaryOperationExpression * node) {
+
+    void * visit(ASTBinaryOperationExpression * node) {
         node->getLeft()->accept(this);
         std::cout<<" "<<node->parseBinOp(node->getOp())<<" ";
         node->getRight()->accept(this);
+        return NULL;
     }
-    void visit(ASTUnaryOperationExpression * node) {
+
+    void * visit(ASTUnaryOperationExpression * node) {
         std::cout<<node->parseUnOp(node->getOp())<<" "<<std::endl;
         node->getExpr()->accept(this);
+        return NULL;
     }
-    void visit(ASTVarDecl * node) {
+
+    void * visit(ASTVarDecl * node) {
         std::cout<<node->parseDatatype(node->getType())<<" ";
         for(auto it = (node->getId_list())->begin() ; it != (node->getId_list())->end(); it++) {
               (*it)->accept(this);
             }
         std::cout<<std::endl;
+        return NULL;
     }
-    void visit(ASTIdentifier * node) {
+
+    void * visit(ASTIdentifier * node) {
         std::cout<<""<<std::endl;
+        return NULL;
     }
-    void visit(ASTStatement * node) {
+
+    void * visit(ASTStatement * node) {
         std::cout<<""<<std::endl;
+        return NULL;
     }
-    void visit(ASTExpression * node) {
+
+    void * visit(ASTExpression * node) {
         std::cout<<""<<std::endl;
+        return NULL;
     }
 };
 #ifdef TEST
