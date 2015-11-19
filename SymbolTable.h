@@ -61,6 +61,12 @@ public:
 	llvm::BasicBlock * topBlock() {
 		return this->table.top().block;
 	}
+	void printTable() {
+		auto i = this->table.top().localVariables;
+		for (auto it = i.begin() ; it != i.end() ; it++) {
+			std::cout << it->first;
+		}
+	}
 };
 
 #endif

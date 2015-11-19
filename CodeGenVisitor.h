@@ -45,7 +45,7 @@ public:
     void codeGen() {
         llvm::BasicBlock *block = llvm::BasicBlock::Create(llvm::getGlobalContext(), "entry", mainFunction, 0);
         symbolTable.pushBlock(block);
-        start->accept(this);
+        this->visit(start);
         symbolTable.popBlock();
         module->dump();
     }
@@ -56,36 +56,33 @@ public:
     void * visit(ASTProgram * node) {
         if (node->getFdl()) {
             for(auto it = (node->getFdl())->begin() ; it != (node->getFdl())->end(); it++) {
-                (*it)->accept(this);
+                this->visit(*it);
             }               
         }
         if (node->getMdl()) {
             for(auto it = (node->getMdl())->begin() ; it != (node->getMdl())->end(); it++) {
-                (*it)->accept(this);
+                this->visit(*it);
             }               
         }
-        return NULL;
     }
     void * visit(ASTFieldDecl * node) {
         if (node->getVar_id_list()) {
             for(auto it = (node->getVar_id_list())->begin() ; it != (node->getVar_id_list())->end(); it++) {
-                (*it)->accept(this);
+                this->visit(*it);            
             }   
         }
         if (node->getArray_id_list()) {
             for(auto it = (node->getArray_id_list())->begin() ; it != (node->getArray_id_list())->end(); it++) {
-                (*it)->accept(this);
+                this->visit(*it);
             }
         }
-        return NULL;
     }
     void * visit(ASTVarDecl * node) {
         if (node->getId_list()) {
             for(auto it = (node->getId_list())->begin() ; it != (node->getId_list())->end(); it++) {
-                (*it)->accept(this);
+                this->visit(*it);
             }
         }
-        return NULL;
     }
     void * visit(ASTIdentifier * node) {
         ASTVarIdentifier * varIdentifier = dynamic_cast<ASTVarIdentifier *>(node);
@@ -103,46 +100,101 @@ public:
         return allocaInst;
     }
     void * visit(ASTArrayIdentifier * node) {
-        return NULL;
     }
     void * visit(ASTMethodDecl * node) {
         if (node->getArguments()) {
             for (auto it = (node->getArguments())->begin(); it != (node->getArguments())->end(); it++) {
-                (*it)->accept(this);
+                this->visit(*it);
             }
         }
-        node->getBlock()->accept(this);
-        return NULL;
+        this->visit(node->getBlock());
     }
     void * visit(ASTTypeIdentifier * node) {
-        return NULL;
     }
-    void * visit(ASTStatement * node) {
-        return NULL; // Should never be called.
+    void * visit(ASTStatement * node) { 
+        ASTAssignmentStatement * assignmentStatement = dynamic_cast<ASTAssignmentStatement *>(node);
+        ASTBlockStatement * blockStatement = dynamic_cast<ASTBlockStatement *>(node);
+        ASTNormalMethod * normalMethod = dynamic_cast<ASTNormalMethod *>(node);
+        ASTCalloutMethod * calloutMethod = dynamic_cast<ASTCalloutMethod *>(node);
+        ASTIfStatement * ifStatement = dynamic_cast<ASTIfStatement *>(node);
+        ASTForStatement * forStatement = dynamic_cast<ASTForStatement *>(node);
+        ASTReturnStatement * returnStatement = dynamic_cast<ASTReturnStatement *>(node);
+        ASTContinueStatement * continueStatement = dynamic_cast<ASTContinueStatement *>(node);
+        ASTBreakStatement * breakStatement = dynamic_cast<ASTBreakStatement *>(node);
+        if (assignmentStatement) {
+            return this->visit(assignmentStatement);
+        }
+        if (blockStatement) {
+            return this->visit(blockStatement);
+        }
+        if (normalMethod) {
+            return this->visit(normalMethod);
+        }
+        if (calloutMethod) {
+            return this->visit(calloutMethod);
+        }
+        if (ifStatement) {
+            return this->visit(ifStatement);
+        }
+        if (forStatement) {
+            return this->visit(forStatement);
+        }
+        if (returnStatement) {
+            return this->visit(returnStatement);
+        }
+        if (continueStatement) {
+            return this->visit(continueStatement);
+        }
+        if (breakStatement) {
+            return this->visit(breakStatement);
+        }
+        return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTExpression * node) {
         ASTBinaryOperationExpression * binaryOperationExpression = dynamic_cast<ASTBinaryOperationExpression *>(node);
         ASTLiteralExpression * literalExpression = dynamic_cast<ASTLiteralExpression *>(node);
+        ASTNormalMethod * normalMethod = dynamic_cast<ASTNormalMethod *>(node);
+        ASTCalloutMethod * calloutMethod = dynamic_cast<ASTCalloutMethod *>(node);
+        ASTUnaryOperationExpression * unaryOperationExpression = dynamic_cast<ASTUnaryOperationExpression *>(node);
+        ASTVarLocation * varLocation = dynamic_cast<ASTVarLocation *>(node);
+        ASTArrayLocation * arrayLocation = dynamic_cast<ASTArrayLocation *>(node);
+        ASTStringCalloutArg * stringCalloutArg = dynamic_cast<ASTStringCalloutArg *>(node);
+        ASTExpressionCalloutArg * expressionCalloutArg = dynamic_cast<ASTExpressionCalloutArg *>(node);
+
         if (binaryOperationExpression) 
             return this->visit(binaryOperationExpression);
         else if (literalExpression) 
             return this->visit(literalExpression);
-        return NULL; // Should never be called.
+        else if (normalMethod) 
+            return this->visit(normalMethod);
+        else if (calloutMethod)
+            return this->visit(calloutMethod);
+        else if (unaryOperationExpression)
+            return this->visit(unaryOperationExpression);
+        else if (varLocation)
+            return this->visit(varLocation);
+        else if (arrayLocation)
+            return this->visit(arrayLocation);
+        else if (stringCalloutArg)
+            return this->visit(stringCalloutArg);
+        else if (expressionCalloutArg)
+            return this->visit(expressionCalloutArg);
+        return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTBlockStatement * node) {
-        if(node->getStmtlist()){
-            for(auto it = (node->getStmtlist())->begin() ; it != (node->getStmtlist())->end(); it++) {
-                (*it)->accept(this);
-            }
-        }
         if(node->getId_list()){
             for(auto it = (node->getId_list())->begin() ; it != (node->getId_list())->end(); it++) {
-                (*it)->accept(this);
+                this->visit(*it);
             }
         }
-        return NULL;
+        if(node->getStmtlist()){
+            for(auto it = (node->getStmtlist())->begin() ; it != (node->getStmtlist())->end(); it++) {
+                this->visit(*it);
+            }
+        }
     }
     void * visit(ASTAssignmentStatement * node) {
+        llvm::Value * location;
         ASTVarLocation * varLocation = dynamic_cast<ASTVarLocation *>(node->getLocation());
         ASTArrayLocation * arrayLocation = dynamic_cast<ASTArrayLocation *>(node->getLocation());
         if (arrayLocation) {
@@ -154,54 +206,43 @@ public:
             if (!symbolTable.lookupLocalVariables(varLocation->getId())) {
                 return ErrorHandler("Variable Not Declared");
             }
+            location = symbolTable.returnLocalVariables(varLocation->getId());
         }
-        llvm::Value * location = static_cast<llvm::Value *>(this->visit(node->getLocation()));
         llvm::Value * expr = static_cast<llvm::Value *>(this->visit(node->getExpr()));
         return new llvm::StoreInst(expr, location, false, symbolTable.topBlock());
     }
-    void * visit(ASTMethodCall * node) {
-        return NULL; // Should never be called.
+    void * visit(ASTMethodCall * node) { // Should never be called.
     }
     void * visit(ASTNormalMethod * node) {
         if (node->getArguments()) {
             for (auto it = (node->getArguments())->begin(); it != (node->getArguments())->end(); it++) {
-                (*it)->accept(this);
+                this->visit(*it);
             }
         }
-        return NULL;
     }
     void * visit(ASTCalloutMethod * node) {
         if (node->getArguments()) {
             for (auto it = (node->getArguments())->begin(); it != (node->getArguments())->end(); it++) {
-                (*it)->accept(this);
+                this->visit(*it);
             }
         }
-        return NULL;
     }
-    void * visit(ASTCalloutArg * node) {
-        return NULL; // Should never be called.
+    void * visit(ASTCalloutArg * node) { // Should never be called.
     }
     void * visit(ASTStringCalloutArg * node) {
-        return NULL;
     }
     void * visit(ASTExpressionCalloutArg * node) {
-        node->getArgument()->accept(this);
-        return NULL;
+        this->visit(node->getArgument());
     }
     void * visit(ASTIfStatement * node) {
-        return NULL;
     }
     void * visit(ASTForStatement * node) {
-        return NULL;
     }
     void * visit(ASTReturnStatement * node) {
-        return NULL;
     }
     void * visit(ASTContinueStatement * node) {
-        return NULL;
     }
     void * visit(ASTBreakStatement * node) {
-        return NULL;
     }
     void * visit(ASTLocation * node) {
         ASTArrayLocation * arrayLocation = dynamic_cast<ASTArrayLocation *>(node);
@@ -215,11 +256,10 @@ public:
     void * visit(ASTVarLocation * node) {
         llvm::Value * val = symbolTable.returnLocalVariables(node->getId());
         if (val)
-            return new llvm::LoadInst(val, "", symbolTable.topBlock());
-        return ErrorHandler("Variable Not Declared Or Initilized");
+            return new llvm::LoadInst(val, "tmp", symbolTable.topBlock());
+        return ErrorHandler("Variable Not Initilized");
     }
     void * visit(ASTArrayLocation * node) {
-        return NULL;
     }
     void * visit(ASTLiteralExpression * node) {
         ASTIntegerLiteralExpression * integerLiteralExpression = dynamic_cast<ASTIntegerLiteralExpression *>(node);
@@ -296,12 +336,6 @@ public:
 };
 #ifdef TEST
 
-int main()
-{
-    ASTProgram * obj = new ASTProgram("yolo",NULL,NULL);
-    obj->accept(new CodeGenVisitor());
-    return 0;
-}
 
 #endif
 #endif
