@@ -1,0 +1,6 @@
+class Program {
+    void main() {
+        int a;
+        a = (4 - 1) >= (1 - 1);
+    }
+}

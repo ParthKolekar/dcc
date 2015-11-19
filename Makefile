@@ -29,5 +29,5 @@ all : ${OBJ}
 debug : clean
 	$(YACC) --debug  $(OBJ).y
 	$(LEX) $(OBJ).l
-	$(CXX) $(OBJ).tab.c lex.yy.c main.cpp -g -O0 -DDEBUG -std=c++11 -o $(OBJ)
+	$(CXX) $(OBJ).tab.c lex.yy.c main.cpp -g -O0 -DDEBUG -std=c++11 -o $(OBJ) `llvm-config --cppflags --libs core jit native` `llvm-config --ldflags`
 
