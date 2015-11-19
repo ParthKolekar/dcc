@@ -6,11 +6,7 @@
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
-#include <cctype>
-#include <cstdio>
-#include <map>
-#include <string>
-#include <vector>
+#include <iostream>
 #include "AST.h"
 #include "Visitor.h"
 
@@ -25,7 +21,7 @@ private:
 public:
     CodeGenVisitor(ASTProgram * start) {
         llvm::LLVMContext &Context = llvm::getGlobalContext();
-        TheModule = new llvm::Module("LLVM IR", Context);
+        TheModule = new llvm::Module(start->getId(), Context);
         this->start = start;
     }
     ~CodeGenVisitor() {
@@ -48,7 +44,7 @@ public:
         return NULL;
     }
     void * visit(ASTIdentifier * node) {
-        return NULL;
+        return NULL; // Should never be called.
     }
     void * visit(ASTVarIdentifier * node) {
         return NULL;
@@ -63,10 +59,10 @@ public:
         return NULL;
     }
     void * visit(ASTStatement * node) {
-        return NULL;
+        return NULL; // Should never be called.
     }
     void * visit(ASTExpression * node) {
-        return NULL;
+        return NULL; // Should never be called.
     }
     void * visit(ASTBlockStatement * node) {
         return NULL;
@@ -108,7 +104,7 @@ public:
         return NULL;
     }
     void * visit(ASTLocation * node) {
-        return NULL;
+        return NULL; // Should never be called.
     }
     void * visit(ASTVarLocation * node) {
         return NULL;
@@ -120,16 +116,16 @@ public:
         return NULL; // Should never be called.
     }
     void * visit(ASTIntegerLiteralExpression * node) {
-        return llvm::ConstantInt::get(llvm::getGlobalContext(), llvm::APInt(64, node->getValue()));
+        return llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), node->getValue(), true);
     }
     void * visit(ASTCharLiteralExpression * node) {
-        return llvm::ConstantInt::get(llvm::getGlobalContext(), llvm::APInt(64, node->getValue()));   
+        return llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), node->getValue(), true);
     }
     void * visit(ASTTrueLiteralExpression * node) {
-        return llvm::ConstantInt::get(llvm::getGlobalContext(), llvm::APInt(64, node->getValue()));
+        return llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), node->getValue(), true);
     }
     void * visit(ASTFalseLiteralExpression * node) {
-        return llvm::ConstantInt::get(llvm::getGlobalContext(), llvm::APInt(64, node->getValue()));
+        return llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), node->getValue(), true);
     }
     void * visit(ASTBinaryOperationExpression * node) {
         return NULL;
