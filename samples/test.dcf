@@ -1,8 +1,7 @@
 class Program {
+        int a[10];
     void main() {
-        int a;
-        int b;
         int c;
-        c = a;
+        a[5] = c;
     }
 }

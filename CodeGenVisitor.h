@@ -64,6 +64,7 @@ public:
                 this->visit(*it);
             }               
         }
+        return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTFieldDecl * node) {
         if (node->getVar_id_list()) {
@@ -76,6 +77,7 @@ public:
                 this->visit(*it);
             }
         }
+        return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTVarDecl * node) {
         if (node->getId_list()) {
@@ -83,6 +85,7 @@ public:
                 this->visit(*it);
             }
         }
+        return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTIdentifier * node) {
         ASTVarIdentifier * varIdentifier = dynamic_cast<ASTVarIdentifier *>(node);
@@ -100,6 +103,10 @@ public:
         return allocaInst;
     }
     void * visit(ASTArrayIdentifier * node) {
+        llvm::AllocaInst * allocaInst = NULL;
+        allocaInst = new llvm::AllocaInst(llvm::ArrayType::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), node->getSize()),node->getId(),symbolTable.topBlock());
+        symbolTable.declareLocalVariables(node->getId(), allocaInst);
+        return allocaInst;
     }
     void * visit(ASTMethodDecl * node) {
         if (node->getArguments()) {
@@ -108,14 +115,15 @@ public:
             }
         }
         this->visit(node->getBlock());
+        return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTTypeIdentifier * node) {
+        return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTStatement * node) { 
         ASTAssignmentStatement * assignmentStatement = dynamic_cast<ASTAssignmentStatement *>(node);
         ASTBlockStatement * blockStatement = dynamic_cast<ASTBlockStatement *>(node);
-        ASTNormalMethod * normalMethod = dynamic_cast<ASTNormalMethod *>(node);
-        ASTCalloutMethod * calloutMethod = dynamic_cast<ASTCalloutMethod *>(node);
+        ASTMethodCall * methodCall = dynamic_cast<ASTMethodCall *>(node);
         ASTIfStatement * ifStatement = dynamic_cast<ASTIfStatement *>(node);
         ASTForStatement * forStatement = dynamic_cast<ASTForStatement *>(node);
         ASTReturnStatement * returnStatement = dynamic_cast<ASTReturnStatement *>(node);
@@ -127,11 +135,8 @@ public:
         if (blockStatement) {
             return this->visit(blockStatement);
         }
-        if (normalMethod) {
-            return this->visit(normalMethod);
-        }
-        if (calloutMethod) {
-            return this->visit(calloutMethod);
+        if (methodCall) {
+            return this->visit(methodCall);
         }
         if (ifStatement) {
             return this->visit(ifStatement);
@@ -153,32 +158,22 @@ public:
     void * visit(ASTExpression * node) {
         ASTBinaryOperationExpression * binaryOperationExpression = dynamic_cast<ASTBinaryOperationExpression *>(node);
         ASTLiteralExpression * literalExpression = dynamic_cast<ASTLiteralExpression *>(node);
-        ASTNormalMethod * normalMethod = dynamic_cast<ASTNormalMethod *>(node);
-        ASTCalloutMethod * calloutMethod = dynamic_cast<ASTCalloutMethod *>(node);
+        ASTMethodCall * methodCall = dynamic_cast<ASTMethodCall *>(node);
         ASTUnaryOperationExpression * unaryOperationExpression = dynamic_cast<ASTUnaryOperationExpression *>(node);
-        ASTVarLocation * varLocation = dynamic_cast<ASTVarLocation *>(node);
-        ASTArrayLocation * arrayLocation = dynamic_cast<ASTArrayLocation *>(node);
-        ASTStringCalloutArg * stringCalloutArg = dynamic_cast<ASTStringCalloutArg *>(node);
-        ASTExpressionCalloutArg * expressionCalloutArg = dynamic_cast<ASTExpressionCalloutArg *>(node);
-
+        ASTLocation * location = dynamic_cast<ASTLocation *>(node);
+        ASTCalloutArg * calloutArg = dynamic_cast<ASTCalloutArg *>(node);
         if (binaryOperationExpression) 
             return this->visit(binaryOperationExpression);
         else if (literalExpression) 
             return this->visit(literalExpression);
-        else if (normalMethod) 
-            return this->visit(normalMethod);
-        else if (calloutMethod)
-            return this->visit(calloutMethod);
+        else if (methodCall)
+            return this->visit(methodCall);
         else if (unaryOperationExpression)
             return this->visit(unaryOperationExpression);
-        else if (varLocation)
-            return this->visit(varLocation);
-        else if (arrayLocation)
-            return this->visit(arrayLocation);
-        else if (stringCalloutArg)
-            return this->visit(stringCalloutArg);
-        else if (expressionCalloutArg)
-            return this->visit(expressionCalloutArg);
+        else if (location)
+            return this->visit(location);
+        else if (calloutArg)
+            return this->visit(calloutArg);
         return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTBlockStatement * node) {
@@ -192,15 +187,19 @@ public:
                 this->visit(*it);
             }
         }
+        return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTAssignmentStatement * node) {
-        llvm::Value * location;
+        llvm::Value * location = NULL;
         ASTVarLocation * varLocation = dynamic_cast<ASTVarLocation *>(node->getLocation());
         ASTArrayLocation * arrayLocation = dynamic_cast<ASTArrayLocation *>(node->getLocation());
         if (arrayLocation) {
             if (!symbolTable.lookupLocalVariables(arrayLocation->getId())) {
                 return ErrorHandler("Variable Not Declared");
             }
+            llvm::Value * val = symbolTable.returnLocalVariables(arrayLocation->getId());
+            llvm::Value * index = static_cast<llvm::Value *>(this->visit(arrayLocation->getIndex()));
+            location = llvm::GetElementPtrInst::CreateInBounds(val, index, "tmp", symbolTable.topBlock());
         }
         if (varLocation) {
             if (!symbolTable.lookupLocalVariables(varLocation->getId())) {
@@ -211,7 +210,14 @@ public:
         llvm::Value * expr = static_cast<llvm::Value *>(this->visit(node->getExpr()));
         return new llvm::StoreInst(expr, location, false, symbolTable.topBlock());
     }
-    void * visit(ASTMethodCall * node) { // Should never be called.
+    void * visit(ASTMethodCall * node) {
+        ASTCalloutMethod * calloutMethod = dynamic_cast<ASTCalloutMethod *>(node);
+        ASTNormalMethod * normalMethod = dynamic_cast<ASTNormalMethod *>(node);
+        if (calloutMethod) 
+            return this->visit(calloutMethod);
+        if (normalMethod) 
+            return this->visit(normalMethod);
+        return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTNormalMethod * node) {
         if (node->getArguments()) {
@@ -219,6 +225,7 @@ public:
                 this->visit(*it);
             }
         }
+        return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTCalloutMethod * node) {
         if (node->getArguments()) {
@@ -226,23 +233,38 @@ public:
                 this->visit(*it);
             }
         }
+        return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
-    void * visit(ASTCalloutArg * node) { // Should never be called.
+    void * visit(ASTCalloutArg * node) { 
+        ASTStringCalloutArg * stringCalloutArg = dynamic_cast<ASTStringCalloutArg *>(node);
+        ASTExpressionCalloutArg * expressionCalloutArg = dynamic_cast<ASTExpressionCalloutArg *>(node);
+        if (stringCalloutArg) 
+            return this->visit(stringCalloutArg);
+        if (expressionCalloutArg)
+            return this->visit(expressionCalloutArg);
+        return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTStringCalloutArg * node) {
+        return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTExpressionCalloutArg * node) {
         this->visit(node->getArgument());
+        return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTIfStatement * node) {
+        return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTForStatement * node) {
+        return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTReturnStatement * node) {
+        return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTContinueStatement * node) {
+        return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTBreakStatement * node) {
+        return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTLocation * node) {
         ASTArrayLocation * arrayLocation = dynamic_cast<ASTArrayLocation *>(node);
@@ -254,12 +276,24 @@ public:
         return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTVarLocation * node) {
+        if (!symbolTable.lookupLocalVariables(node->getId())) {
+            return ErrorHandler("Variable Not Declared");
+        }
         llvm::Value * val = symbolTable.returnLocalVariables(node->getId());
         if (val)
             return new llvm::LoadInst(val, "tmp", symbolTable.topBlock());
         return ErrorHandler("Variable Not Initilized");
     }
     void * visit(ASTArrayLocation * node) {
+        if (!symbolTable.lookupLocalVariables(node->getId())) {
+            return ErrorHandler("Variable Not Declared");
+        }
+        llvm::Value * index = static_cast<llvm::Value *>(this->visit(node->getIndex()));
+        llvm::Value * val = symbolTable.returnLocalVariables(node->getId());
+        llvm::Value * offset = llvm::GetElementPtrInst::CreateInBounds(val, index, "tmp", symbolTable.topBlock());
+        if (val)
+            return new llvm::LoadInst(offset, "tmp", symbolTable.topBlock());
+        return ErrorHandler("Variable Not Initilized");
     }
     void * visit(ASTLiteralExpression * node) {
         ASTIntegerLiteralExpression * integerLiteralExpression = dynamic_cast<ASTIntegerLiteralExpression *>(node);
@@ -323,13 +357,12 @@ public:
         }
         return ErrorHandler("No Known BinaryOperator");
     }
-
     void * visit(ASTUnaryOperationExpression * node) {
-        switch(node->getOp()){
+        switch(node->getOp()) {
             case UnOp::minus_op: 
-                return Builder.CreateNeg(static_cast<llvm::Value*>(this->visit(node->getExpr())),"tmp");
+                return llvm::BinaryOperator::Create(llvm::Instruction::Sub, llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), 0, true), static_cast<llvm::Value*>(this->visit(node->getExpr())), "tmp", symbolTable.topBlock());
             case UnOp::not_op: 
-                return Builder.CreateNot(static_cast<llvm::Value*>(this->visit(node->getExpr())),"tmp");
+                return llvm::BinaryOperator::Create(llvm::Instruction::Xor, llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), -1, true), static_cast<llvm::Value*>(this->visit(node->getExpr())), "tmp", symbolTable.topBlock());
         }
         return ErrorHandler("No Known UnaryOperator");
     }
