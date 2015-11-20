@@ -1,8 +1,5 @@
 class Program {
-    int x(int a) {
-        return a;
-    }
     void main() {
-        x(1);
+        callout("printf", "Hello Worldad", 1, "asda");
     }
 }

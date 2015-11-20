@@ -18,6 +18,15 @@
 #include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/ExecutionEngine/JIT.h>
 #include <llvm/Support/raw_ostream.h>
+#include <llvm/Pass.h>
+#include <llvm/ADT/SmallVector.h>
+#include <llvm/IR/BasicBlock.h>
+#include <llvm/IR/CallingConv.h>
+#include <llvm/IR/Constants.h>
+#include <llvm/IR/GlobalVariable.h>
+#include <llvm/IR/InlineAsm.h>
+#include <llvm/Support/FormattedStream.h>
+#include <llvm/Support/MathExtras.h>
 #include <iostream>
 #include "SymbolTable.h"
 #include "AST.h"
@@ -294,9 +303,9 @@ public:
         return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTStringCalloutArg * node) {
-        return ErrorHandler("boo");
-        // llvm::ArrayType * type = llvm::ArrayType::get(llvm::Type::getInt8Ty(llvm::getGlobalContext()), node->getArgument()->size() + 1);
-        // return llvm::GlobalVariable();
+        llvm::GlobalVariable* variable = new llvm::GlobalVariable(*module, llvm::ArrayType::get(llvm::IntegerType::get(llvm::getGlobalContext(), 8), node->getArgument().size()), true, llvm::GlobalValue::InternalLinkage, 0, "string");
+        variable->setInitializer(llvm::ConstantDataArray::getString(llvm::getGlobalContext(), node->getArgument(), true));
+        return variable;
     }
     void * visit(ASTExpressionCalloutArg * node) {
         return this->visit(node->getArgument());
