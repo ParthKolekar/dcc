@@ -8,8 +8,11 @@ addons:
         packages:
             - bison
             - flex
+            - llvm
+            - clang
 
-sudo: false
+sudo: required
+dist: trusty
 
 script:
     - make 
