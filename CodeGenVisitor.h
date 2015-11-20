@@ -42,9 +42,10 @@ private:
 public:
     CodeGenVisitor(ASTProgram * start) {
         module = new llvm::Module(start->getId(), llvm::getGlobalContext());
+        module->setTargetTriple("x86_64-pc-linux-gnu");
         this->start = start;
         llvm::FunctionType *ftype = llvm::FunctionType::get(llvm::Type::getVoidTy(llvm::getGlobalContext()), false);
-        mainFunction = llvm::Function::Create(ftype, llvm::GlobalValue::InternalLinkage, "main", module);
+        mainFunction = llvm::Function::Create(ftype, llvm::GlobalValue::ExternalLinkage, "main", module);
     }
     ~CodeGenVisitor() {
     }
@@ -61,6 +62,7 @@ public:
     }
     llvm::Value * ErrorHandler(const char * error) {
         std::cerr << error;
+        return 0;
         // exit(0);
     }
     void * visit(ASTProgram * node) {
@@ -286,12 +288,19 @@ public:
         return llvm::CallInst::Create(function, llvm::makeArrayRef(args), node->getId(), symbolTable.topBlock());
     }
     void * visit(ASTCalloutMethod * node) {
+        llvm::Function * function = module->getFunction(node->getMethod_name());
+        if (!function) {
+            llvm::FunctionType *ftype = llvm::FunctionType::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), true);
+            function = llvm::Function::Create(ftype, llvm::GlobalValue::ExternalLinkage, node->getMethod_name(), module);
+        }
+        std::vector<llvm::Value *> args;
         if (node->getArguments()) {
             for (auto it = (node->getArguments())->begin(); it != (node->getArguments())->end(); it++) {
-                this->visit(*it);
+                args.push_back(static_cast<llvm::Value *>(this->visit(*it)));
             }
         }
-        return ErrorHandler("Should Never Be Called"); // Should never be called.
+        llvm::CallInst *call = llvm::CallInst::Create(function, llvm::makeArrayRef(args), "", symbolTable.topBlock());
+        return call;
     }
     void * visit(ASTCalloutArg * node) { 
         ASTStringCalloutArg * stringCalloutArg = dynamic_cast<ASTStringCalloutArg *>(node);
@@ -303,7 +312,7 @@ public:
         return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTStringCalloutArg * node) {
-        llvm::GlobalVariable* variable = new llvm::GlobalVariable(*module, llvm::ArrayType::get(llvm::IntegerType::get(llvm::getGlobalContext(), 8), node->getArgument().size()), true, llvm::GlobalValue::InternalLinkage, 0, "string");
+        llvm::GlobalVariable* variable = new llvm::GlobalVariable(*module, llvm::ArrayType::get(llvm::IntegerType::get(llvm::getGlobalContext(), 8), node->getArgument().size() + 1), true, llvm::GlobalValue::InternalLinkage, 0, "string");
         variable->setInitializer(llvm::ConstantDataArray::getString(llvm::getGlobalContext(), node->getArgument(), true));
         return variable;
     }
@@ -311,10 +320,10 @@ public:
         return this->visit(node->getArgument());
     }
     void * visit(ASTIfStatement * node) {
-        return ErrorHandler("Should Never Be Called"); // Should never be called.
+        return ErrorHandler("Not Yet Be Called"); // Not Yet be called.
     }
     void * visit(ASTForStatement * node) {
-        return ErrorHandler("Should Never Be Called"); // Should never be called.
+        return ErrorHandler("Not Yet Be Called"); // Not Yet be called.
     }
     void * visit(ASTReturnStatement * node) {
         if(node->getExpr()) {
@@ -325,10 +334,10 @@ public:
         }
     }
     void * visit(ASTContinueStatement * node) {
-        return ErrorHandler("Should Never Be Called"); // Should never be called.
+        return ErrorHandler("Not Yet Be Called"); // Not Yet be called.
     }
     void * visit(ASTBreakStatement * node) {
-        return ErrorHandler("Should Never Be Called"); // Should never be called.
+        return ErrorHandler("Not Yet Be Called"); // Not Yet be called.
     }
     void * visit(ASTLocation * node) {
         ASTArrayLocation * arrayLocation = dynamic_cast<ASTArrayLocation *>(node);
