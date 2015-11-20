@@ -1,7 +1,8 @@
 class Program {
-        int a[10];
-    int xx(int a)
-    {
-        int d;
+    int x(int a) {
+        return a;
+    }
+    void main() {
+        x(1);
     }
 }
