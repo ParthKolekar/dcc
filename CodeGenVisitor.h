@@ -23,8 +23,6 @@
 #include "AST.h"
 #include "Visitor.h"
 
-llvm::IRBuilder<> Builder(llvm::getGlobalContext());
-
 class CodeGenVisitor : public Visitor
 {
 private:
@@ -59,10 +57,20 @@ public:
                 this->visit(*it);
             }               
         }
+        llvm::Function * iterator = NULL;
+        llvm::Function * userMain = NULL;
         if (node->getMdl()) {
             for(auto it = (node->getMdl())->begin() ; it != (node->getMdl())->end(); it++) {
-                this->visit(*it);
+                iterator = static_cast<llvm::Function *>(this->visit(*it));
+                if ((*it)->getId() == "main" && !userMain) {
+                    userMain = iterator;
+                }
             }               
+        }
+        if (!userMain)
+            return ErrorHandler("No main Found");
+        else {
+            llvm::CallInst::Create(userMain, "user_main", symbolTable.topBlock());
         }
         return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
@@ -108,14 +116,41 @@ public:
         symbolTable.declareLocalVariables(node->getId(), allocaInst);
         return allocaInst;
     }
+    llvm::Type * parseType(Datatype type) {
+        switch(type) {
+            case Datatype::int_type: 
+                return llvm::Type::getInt64Ty(llvm::getGlobalContext());
+            case Datatype::void_type: 
+                return llvm::Type::getVoidTy(llvm::getGlobalContext());
+            case Datatype::bool_type: 
+                return llvm::Type::getInt64Ty(llvm::getGlobalContext());                   
+        }
+        return NULL;
+    }
     void * visit(ASTMethodDecl * node) {
+        std::vector<llvm::Type*> argTypes;
         if (node->getArguments()) {
             for (auto it = (node->getArguments())->begin(); it != (node->getArguments())->end(); it++) {
-                this->visit(*it);
+                argTypes.push_back(parseType((*it)->getType()));
+            }
+        } 
+
+        llvm::FunctionType *ftype = llvm::FunctionType::get(parseType(node->getReturnType()), llvm::makeArrayRef(argTypes), false);
+        llvm::Function *function = llvm::Function::Create(ftype, llvm::GlobalValue::InternalLinkage, node->getId(), module);
+        llvm::BasicBlock *bblock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "entry", function, 0); 
+        // Builder.SetInsertPoint(bblock);
+        symbolTable.pushBlock(bblock);
+        if (node->getArguments()) {
+            for (auto it = (node->getArguments())->begin(); it != (node->getArguments())->end(); it++) {
+                llvm::AllocaInst * allocaInst = NULL;
+                allocaInst = new llvm::AllocaInst(llvm::Type::getInt64Ty(llvm::getGlobalContext()), (*it)->getId(), symbolTable.topBlock());
+                symbolTable.declareLocalVariables((*it)->getId(), allocaInst);
             }
         }
-        this->visit(node->getBlock());
-        return ErrorHandler("Should Never Be Called"); // Should never be called.
+        this->visit(node->getBlock());    
+        llvm::ReturnInst::Create(llvm::getGlobalContext(),bblock);  
+        symbolTable.popBlock();    
+        return function;
     }
     void * visit(ASTTypeIdentifier * node) {
         return ErrorHandler("Should Never Be Called"); // Should never be called.
@@ -258,6 +293,12 @@ public:
         return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTReturnStatement * node) {
+        if(node->getExpr()) {
+            llvm::Value * expression = static_cast<llvm::Value *>(this->visit(node->getExpr()));
+            return llvm::ReturnInst::Create(llvm::getGlobalContext(), expression, symbolTable.topBlock());
+        } else {
+            return llvm::ReturnInst::Create(llvm::getGlobalContext(),symbolTable.topBlock());
+        }
         return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTContinueStatement * node) {

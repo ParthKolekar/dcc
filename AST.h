@@ -577,13 +577,13 @@ public:
 
 class ASTReturnStatement : public ASTStatement
 {
-    ASTExpression * return_expr;
+    ASTExpression * expr;
 public:
-    ASTReturnStatement(ASTExpression * return_expr) {
-        this->return_expr = return_expr;
+    ASTReturnStatement(ASTExpression * expr) {
+        this->expr = expr;
     }
-    ASTExpression * getReturn_expr() {
-        return this->return_expr;
+    ASTExpression * getExpr() {
+        return this->expr;
     }
     ~ASTReturnStatement() {
         

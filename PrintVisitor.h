@@ -167,7 +167,7 @@ return NULL;
 
     void * visit(ASTReturnStatement * node) {
         std::cout<<"return ";
-        node->getReturn_expr()->accept(this);
+        node->getExpr()->accept(this);
         return NULL;
     }
 
