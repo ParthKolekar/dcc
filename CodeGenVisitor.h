@@ -164,8 +164,12 @@ public:
                 symbolTable.declareLocalVariables((*it)->getId(), allocaInst);
             }
         }
-        this->visit(node->getBlock());    
-        llvm::ReturnInst::Create(llvm::getGlobalContext(),block);  
+        this->visit(node->getBlock());
+        if(node->getReturnType() == Datatype::void_type)  
+            llvm::ReturnInst::Create(llvm::getGlobalContext(), block);
+        else 
+            llvm::ReturnInst::Create(llvm::getGlobalContext(), llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), 0, true), symbolTable.topBlock());
+
         symbolTable.popBlock();    
         return function;
     }
