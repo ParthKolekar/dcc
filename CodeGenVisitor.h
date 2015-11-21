@@ -151,6 +151,8 @@ public:
 
         llvm::FunctionType *ftype = llvm::FunctionType::get(parseType(node->getReturnType()), llvm::makeArrayRef(argTypes), false);
         llvm::Function *function = llvm::Function::Create(ftype, llvm::GlobalValue::InternalLinkage, node->getId(), module);
+        llvm::BasicBlock *block = llvm::BasicBlock::Create(llvm::getGlobalContext(), "entry", function, 0); 
+        symbolTable.pushBlock(block);
         if (node->getArguments()) {
             auto it2 = function->arg_begin();
             for (auto it = (node->getArguments())->begin(); it != (node->getArguments())->end(); it++, it2++) {
@@ -163,7 +165,12 @@ public:
             }
         }
         this->visit(node->getBlock());
-        llvm::ReturnInst::Create(llvm::getGlobalContext(),block);     
+        if(node->getReturnType() == Datatype::void_type)  
+            llvm::ReturnInst::Create(llvm::getGlobalContext(), block);
+        else 
+            llvm::ReturnInst::Create(llvm::getGlobalContext(), llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), 0, true), symbolTable.topBlock());
+
+        symbolTable.popBlock();    
         return function;
     }
     void * visit(ASTTypeIdentifier * node) {
@@ -226,8 +233,6 @@ public:
         return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTBlockStatement * node) {
-        llvm::BasicBlock *block = llvm::BasicBlock::Create(llvm::getGlobalContext(), "entry", symbolTable.topBlock()->getParent(), 0);
-        symbolTable.pushBlock(block);
         if(node->getId_list()){
             for(auto it = (node->getId_list())->begin() ; it != (node->getId_list())->end(); it++) {
                 this->visit(*it);
@@ -238,7 +243,6 @@ public:
                 this->visit(*it);
             }
         }
-        symbolTable.popBlock();
         return NULL;
     }
     void * visit(ASTAssignmentStatement * node) {
@@ -323,7 +327,6 @@ public:
         return ErrorHandler("Not Yet Be Called"); // Not Yet be called.
     }
     void * visit(ASTForStatement * node) {
-
         return ErrorHandler("Not Yet Be Called"); // Not Yet be called.
     }
     void * visit(ASTReturnStatement * node) {
@@ -338,7 +341,6 @@ public:
         return ErrorHandler("Not Yet Be Called"); // Not Yet be called.
     }
     void * visit(ASTBreakStatement * node) {
-        llvm::BasicBlock * oldBlock = symbolTable.topBlock(); 
         return ErrorHandler("Not Yet Be Called"); // Not Yet be called.
     }
     void * visit(ASTLocation * node) {
