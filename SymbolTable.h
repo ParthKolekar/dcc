@@ -34,6 +34,9 @@ public:
 	std::map<std::string, llvm::Value *> getLocalVariables() {
 		return this->table.front().localVariables;
 	}
+	void setLocalVariables(std::map<std::string, llvm::Value *> variables) {
+		this->table.front().localVariables.insert(variables.begin(), variables.end());
+	}
 	bool lookupLocalVariables(std::string name) {
 		auto it = this->getLocalVariables();
 		return it.find(name) != it.end();
