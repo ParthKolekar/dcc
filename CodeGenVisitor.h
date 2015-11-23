@@ -416,7 +416,9 @@ public:
         }
     }
     void * visit(ASTContinueStatement * node) {
-        return ErrorHandler("Not Yet Be Called"); // Not Yet be called.
+        llvm::BasicBlock * block = symbolTable.getCS();
+        llvm::BasicBlock * curBlock = symbolTable.topBlock();
+        return llvm::BranchInst::Create(block, curBlock);
     }
     void * visit(ASTBreakStatement * node) {
         llvm::BasicBlock * block = symbolTable.getBS();

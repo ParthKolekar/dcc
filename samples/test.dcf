@@ -3,13 +3,10 @@ class Program {
         int i;
         for i = 1, 10
         {
-            int j;
-            for j = 0, 9 { 
-                callout ("printf", "%d", i);
-                j += 1;
-                i += 1;
-            }
-            return;
+            i += 1;
+            callout ("printf", "%d", i);
+            continue;
+            i += 1;
         }
     }
 }
