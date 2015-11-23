@@ -119,16 +119,25 @@ public:
         return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTVarIdentifier * node) {
-        llvm::AllocaInst * allocaInst = NULL;
-        allocaInst = new llvm::AllocaInst(llvm::Type::getInt64Ty(llvm::getGlobalContext()), node->getId(), symbolTable.topBlock());
-        symbolTable.declareLocalVariables(node->getId(), allocaInst);
-        return allocaInst;
+        if(symbolTable.topBlock() == symbolTable.bottomBlock()) {
+            llvm::GlobalVariable * globalInteger = new llvm::GlobalVariable(*module, llvm::Type::getInt64Ty(llvm::getGlobalContext()), false, llvm::GlobalValue::CommonLinkage, NULL, node->getId());
+            globalInteger->setInitializer(llvm::ConstantInt::get(llvm::getGlobalContext(), llvm::APInt(64, llvm::StringRef("0"), 10)));
+            symbolTable.declareLocalVariables(node->getId(), globalInteger);
+            return globalInteger;
+        }
+        else {
+            llvm::AllocaInst * allocaInst = new llvm::AllocaInst(llvm::Type::getInt64Ty(llvm::getGlobalContext()), node->getId(), symbolTable.topBlock());
+            symbolTable.declareLocalVariables(node->getId(), allocaInst);
+            return allocaInst;
+        }
     }
     void * visit(ASTArrayIdentifier * node) {
         llvm::AllocaInst * allocaInst = NULL;
-        allocaInst = new llvm::AllocaInst(llvm::ArrayType::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), node->getSize()),node->getId(),symbolTable.topBlock());
-        symbolTable.declareLocalVariables(node->getId(), allocaInst);
-        return allocaInst;
+        llvm::GlobalVariable* variable = new llvm::GlobalVariable(*module, llvm::ArrayType::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), node->getSize()), false, llvm::GlobalValue::CommonLinkage, NULL, node->getId());
+        variable->setInitializer(llvm::ConstantAggregateZero::get(llvm::ArrayType::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), node->getSize())));
+        // allocaInst = new llvm::AllocaInst(llvm::ArrayType::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), node->getSize()),node->getId(),symbolTable.topBlock());
+        symbolTable.declareLocalVariables(node->getId(), variable);
+        return variable;
     }
     llvm::Type * parseType(Datatype type) {
         switch(type) {
@@ -164,11 +173,13 @@ public:
                 symbolTable.declareLocalVariables((*it)->getId(), allocaInst);
             }
         }
-        this->visit(node->getBlock());
-        if(node->getReturnType() == Datatype::void_type)  
-            llvm::ReturnInst::Create(llvm::getGlobalContext(), block);
-        else 
-            llvm::ReturnInst::Create(llvm::getGlobalContext(), llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), 0, true), symbolTable.topBlock());
+        this->visit(node->getBlock(), NULL);
+        if (!symbolTable.topBlock()->getTerminator()) {
+            if(node->getReturnType() == Datatype::void_type)  
+                llvm::ReturnInst::Create(llvm::getGlobalContext(), block);
+            else 
+                llvm::ReturnInst::Create(llvm::getGlobalContext(), llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), 0, true), symbolTable.topBlock());
+        }
 
         symbolTable.popBlock();    
         return function;
@@ -189,7 +200,7 @@ public:
             return this->visit(assignmentStatement);
         }
         if (blockStatement) {
-            return this->visit(blockStatement);
+            return this->visit(blockStatement, NULL);
         }
         if (methodCall) {
             return this->visit(methodCall);
@@ -232,6 +243,12 @@ public:
             return this->visit(calloutArg);
         return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
+    void * visit(ASTBlockStatement * node, llvm::BasicBlock * inject) {
+        //
+        this->visit(node);
+        //
+        return NULL;
+    }
     void * visit(ASTBlockStatement * node) {
         if(node->getId_list()){
             for(auto it = (node->getId_list())->begin() ; it != (node->getId_list())->end(); it++) {
@@ -250,7 +267,7 @@ public:
         ASTVarLocation * varLocation = dynamic_cast<ASTVarLocation *>(node->getLocation());
         ASTArrayLocation * arrayLocation = dynamic_cast<ASTArrayLocation *>(node->getLocation());
         if (arrayLocation) {
-            if (!symbolTable.lookupLocalVariables(arrayLocation->getId())) {
+            if (!symbolTable.lookupGlobalVariables(arrayLocation->getId())) {
                 return ErrorHandler("Variable Not Declared");
             }
             llvm::Value * val = symbolTable.returnLocalVariables(arrayLocation->getId());
@@ -258,7 +275,7 @@ public:
             location = llvm::GetElementPtrInst::CreateInBounds(val, index, "tmp", symbolTable.topBlock());
         }
         if (varLocation) {
-            if (!symbolTable.lookupLocalVariables(varLocation->getId())) {
+            if (!symbolTable.lookupGlobalVariables(varLocation->getId())) {
                 return ErrorHandler("Variable Not Declared");
             }
             location = symbolTable.returnLocalVariables(varLocation->getId());
@@ -316,7 +333,7 @@ public:
         return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTStringCalloutArg * node) {
-        llvm::GlobalVariable* variable = new llvm::GlobalVariable(*module, llvm::ArrayType::get(llvm::IntegerType::get(llvm::getGlobalContext(), 8), node->getArgument().size() + 1), true, llvm::GlobalValue::InternalLinkage, 0, "string");
+        llvm::GlobalVariable* variable = new llvm::GlobalVariable(*module, llvm::ArrayType::get(llvm::IntegerType::get(llvm::getGlobalContext(), 8), node->getArgument().size() + 1), true, llvm::GlobalValue::InternalLinkage, NULL, "string");
         variable->setInitializer(llvm::ConstantDataArray::getString(llvm::getGlobalContext(), node->getArgument(), true));
         return variable;
     }
@@ -327,6 +344,9 @@ public:
         return ErrorHandler("Not Yet Be Called"); // Not Yet be called.
     }
     void * visit(ASTForStatement * node) {
+        llvm::BasicBlock * headerBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "loop_header", symbolTable.topBlock()->getParent(), 0);
+        llvm::BasicBlock * bodyBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "loop_body", symbolTable.topBlock()->getParent(), 0);
+        llvm::BasicBlock * afterLoopBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "after_loop", symbolTable.topBlock()->getParent(), 0);
         return ErrorHandler("Not Yet Be Called"); // Not Yet be called.
     }
     void * visit(ASTReturnStatement * node) {
@@ -353,7 +373,7 @@ public:
         return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTVarLocation * node) {
-        if (!symbolTable.lookupLocalVariables(node->getId())) {
+        if (!symbolTable.lookupGlobalVariables(node->getId())) {
             return ErrorHandler("Variable Not Declared");
         }
         llvm::Value * val = symbolTable.returnLocalVariables(node->getId());
@@ -362,14 +382,18 @@ public:
         return ErrorHandler("Variable Not Initilized");
     }
     void * visit(ASTArrayLocation * node) {
-        if (!symbolTable.lookupLocalVariables(node->getId())) {
+        if (!symbolTable.lookupGlobalVariables(node->getId())) {
             return ErrorHandler("Variable Not Declared");
         }
-        llvm::Value * index = static_cast<llvm::Value *>(this->visit(node->getIndex()));
+        std::vector <llvm::Value *> index;
+        index.push_back(llvm::ConstantInt::get(llvm::getGlobalContext(), llvm::APInt(32, llvm::StringRef("0"), 10)));
+        index.push_back(static_cast<llvm::Value *>(this->visit(node->getIndex())));
         llvm::Value * val = symbolTable.returnLocalVariables(node->getId());
         llvm::Value * offset = llvm::GetElementPtrInst::CreateInBounds(val, index, "tmp", symbolTable.topBlock());
-        if (val)
-            return new llvm::LoadInst(offset, "tmp", symbolTable.topBlock());
+        if (val) {
+            llvm::LoadInst * load = new llvm::LoadInst(offset, "tmp", symbolTable.topBlock());
+            return load;
+        }
         return ErrorHandler("Variable Not Initilized");
     }
     void * visit(ASTLiteralExpression * node) {

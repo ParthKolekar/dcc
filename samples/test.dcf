@@ -1,7 +1,9 @@
 class Program {
-    void main() {
-        int a;
-        a = 10;
-        callout("printf", "%d", a);
+    int a[10];
+    int x;
+    int main() {
+        int b;
+        b=x;
+        return b;
     }
 }

@@ -6,7 +6,7 @@
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
-#include <stack>
+#include <list>
 
 class SymbolTableNode
 {
@@ -24,7 +24,7 @@ public:
 class SymbolTable
 {
 public:
-	std::stack<SymbolTableNode> table;
+	std::list<SymbolTableNode> table;
 	SymbolTable() {
 
 	}
@@ -32,7 +32,7 @@ public:
 
 	}
 	std::map<std::string, llvm::Value *> getLocalVariables() {
-		return this->table.top().localVariables;
+		return this->table.front().localVariables;
 	}
 	bool lookupLocalVariables(std::string name) {
 		auto it = this->getLocalVariables();
@@ -40,29 +40,37 @@ public:
 	}
 	void declareLocalVariables(std::string name, llvm::Value * value) {
 		if (!this->lookupLocalVariables(name)) {
-			this->table.top().localVariables.insert(std::pair<std::string, llvm::Value *>(name, value));
+			this->table.front().localVariables.insert(std::pair<std::string, llvm::Value *>(name, value));
 		} else {
 			std::cerr<<"Variable "<<name<<" already declared";
 		}
 	}
+	bool lookupGlobalVariables(std::string name) {
+		return this->returnLocalVariables(name) != NULL;
+	}
 	llvm::Value * returnLocalVariables(std::string name) {
-		if (lookupLocalVariables(name)) {
-			auto it = this->getLocalVariables();
-			return it.find(name)->second;
+		for (auto it = this->table.begin(); it != this->table.end(); it++) {
+			auto found_or_end = it->localVariables.find(name);
+			if (found_or_end != it->localVariables.end()) {
+				return found_or_end->second;
+			}
 		}
 		return NULL;
 	}
 	void pushBlock(llvm::BasicBlock * block) {
-		this->table.push(SymbolTableNode(block));
+		this->table.push_front(SymbolTableNode(block));
 	}
 	void popBlock() {
-		this->table.pop();
+		this->table.pop_front();
 	}
 	llvm::BasicBlock * topBlock() {
-		return this->table.top().block;
+		return this->table.front().block;
+	}
+	llvm::BasicBlock * bottomBlock() {
+		return this->table.back().block;
 	}
 	void printTable() {
-		auto i = this->table.top().localVariables;
+		auto i = this->table.front().localVariables;
 		for (auto it = i.begin() ; it != i.end() ; it++) {
 			std::cout << it->first;
 		}

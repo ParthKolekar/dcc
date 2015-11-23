@@ -549,14 +549,19 @@ public:
 
 class ASTForStatement : public ASTStatement 
 {
+    std::string id;
     ASTExpression * init_condition;
     ASTExpression * end_condition;
     ASTBlockStatement * block;
 public:
-    ASTForStatement(ASTExpression * init_condition, ASTExpression * end_condition, ASTBlockStatement * block) {
+    ASTForStatement(ASTExpression * init_condition, ASTExpression * end_condition, ASTBlockStatement * block, std::string id) {
         this->init_condition = init_condition;
         this->end_condition = end_condition;
         this->block = block;
+        this->id = id;
+    }
+    std::string getId() {
+        return this->id;
     }
     ASTExpression * getInit_condition() {
         return this->init_condition;
