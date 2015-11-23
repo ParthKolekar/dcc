@@ -7,6 +7,7 @@
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 #include <list>
+#include <stack>
 
 class SymbolTableNode
 {
@@ -25,6 +26,7 @@ class SymbolTable
 {
 public:
 	std::list<SymbolTableNode> table;
+	std::stack<std::pair<llvm::BasicBlock *, llvm::BasicBlock *>> break_continue_stack;
 	SymbolTable() {
 
 	}
@@ -82,6 +84,18 @@ public:
 		for (auto it = i.begin() ; it != i.end() ; it++) {
 			std::cout << it->first;
 		}
+	}
+	void pushBCS(llvm::BasicBlock * breakSt, llvm::BasicBlock * returnSt) {
+		this->break_continue_stack.push(std::make_pair(breakSt, returnSt));
+	}
+	void popBCS() {
+		this->break_continue_stack.pop();
+	}
+	llvm::BasicBlock * getBS() {
+		return this->break_continue_stack.top().first;
+	}
+	llvm::BasicBlock * getCS() {
+		return this->break_continue_stack.top().second;
 	}
 };
 

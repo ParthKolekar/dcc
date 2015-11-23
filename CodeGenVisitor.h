@@ -270,6 +270,11 @@ public:
         if(node->getStmtlist()){
             for(auto it = (node->getStmtlist())->begin() ; it != (node->getStmtlist())->end(); it++) {
                 this->visit(*it);
+                ASTReturnStatement * returnStatement = dynamic_cast<ASTReturnStatement *>(*it);
+                ASTBreakStatement * breakStatement = dynamic_cast<ASTBreakStatement *>(*it);
+                ASTContinueStatement * continueStatement = dynamic_cast<ASTContinueStatement *>(*it);
+                if (returnStatement or breakStatement or continueStatement) 
+                    break;
             }
         }
         return NULL;
@@ -297,11 +302,11 @@ public:
         switch(node->getOp()) {
             case AssignOp::plus_equal:
                 exsitingValue = new llvm::LoadInst(location, "load", symbolTable.topBlock());
-                expr = llvm::BinaryOperator::Create(llvm::Instruction::Add, expr, exsitingValue, "tmp", symbolTable.topBlock());
+                expr = llvm::BinaryOperator::Create(llvm::Instruction::Add, exsitingValue, expr, "tmp", symbolTable.topBlock());
                 break;
             case AssignOp::minus_equal: 
                 exsitingValue = new llvm::LoadInst(location, "load", symbolTable.topBlock());
-                expr = llvm::BinaryOperator::Create(llvm::Instruction::Sub, expr, exsitingValue, "tmp", symbolTable.topBlock());
+                expr = llvm::BinaryOperator::Create(llvm::Instruction::Sub, exsitingValue, expr, "tmp", symbolTable.topBlock());
                 break;
             case AssignOp::equal: 
                 break;
@@ -378,23 +383,31 @@ public:
         llvm::BasicBlock * headerBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "loop_header", entryBlock->getParent(), 0);
         llvm::BasicBlock * bodyBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "loop_body", entryBlock->getParent(), 0);
         llvm::BasicBlock * afterLoopBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "after_loop", entryBlock->getParent(), 0);
+
+        symbolTable.pushBCS(afterLoopBlock, headerBlock);
+
         new llvm::StoreInst(static_cast<llvm::Value *>(this->visit(node->getInit_condition())), symbolTable.returnLocalVariables(node->getId()), false, entryBlock);
         llvm::Value * val = new llvm::LoadInst(symbolTable.returnLocalVariables(node->getId()), "load", headerBlock);
         llvm::ICmpInst* int1_14 = new llvm::ICmpInst(*headerBlock, llvm::ICmpInst::ICMP_NE, val, static_cast<llvm::Value *>(this->visit(node->getEnd_condition())), "");
         llvm::BranchInst::Create(bodyBlock, afterLoopBlock, int1_14, headerBlock);
         llvm::BranchInst::Create(headerBlock, entryBlock);
-        
+
         symbolTable.pushBlock(bodyBlock);
         this->visit(node->getBlock(), NULL);
         symbolTable.popBlock();
         llvm::BranchInst::Create(headerBlock, bodyBlock);
+
         auto localVariables = symbolTable.getLocalVariables();
         symbolTable.popBlock();
         symbolTable.pushBlock(afterLoopBlock);
         symbolTable.setLocalVariables(localVariables);
+
+        symbolTable.popBCS();
         return NULL;
     }
     void * visit(ASTReturnStatement * node) {
+        llvm::Function * function = symbolTable.topBlock()->getParent();
+        llvm::FunctionType * ftype = function->getFunctionType();
         if(node->getExpr()) {
             llvm::Value * expression = static_cast<llvm::Value *>(this->visit(node->getExpr()));
             return llvm::ReturnInst::Create(llvm::getGlobalContext(), expression, symbolTable.topBlock());
@@ -406,7 +419,13 @@ public:
         return ErrorHandler("Not Yet Be Called"); // Not Yet be called.
     }
     void * visit(ASTBreakStatement * node) {
-        return ErrorHandler("Not Yet Be Called"); // Not Yet be called.
+        llvm::BasicBlock * block = symbolTable.getBS();
+        llvm::BasicBlock * curBlock = symbolTable.topBlock();
+        auto localVariables = symbolTable.getLocalVariables();
+        symbolTable.popBlock();
+        symbolTable.pushBlock(block);
+        symbolTable.setLocalVariables(localVariables);
+        return llvm::BranchInst::Create(block, curBlock);
     }
     void * visit(ASTLocation * node) {
         ASTArrayLocation * arrayLocation = dynamic_cast<ASTArrayLocation *>(node);
