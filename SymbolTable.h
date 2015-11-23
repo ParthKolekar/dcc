@@ -92,10 +92,16 @@ public:
 		this->break_continue_stack.pop();
 	}
 	llvm::BasicBlock * getBS() {
-		return this->break_continue_stack.top().first;
+		if (!this->break_continue_stack.empty()) {
+			return this->break_continue_stack.top().first;
+		}
+		return NULL;
 	}
 	llvm::BasicBlock * getCS() {
-		return this->break_continue_stack.top().second;
+		if (!this->break_continue_stack.empty()) {
+			return this->break_continue_stack.top().second;
+		}
+		return NULL;
 	}
 };
 

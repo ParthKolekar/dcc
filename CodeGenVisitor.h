@@ -417,11 +417,17 @@ public:
     }
     void * visit(ASTContinueStatement * node) {
         llvm::BasicBlock * block = symbolTable.getCS();
+        if (!block) {
+            return ErrorHandler("Incorrect continue usage");
+        }
         llvm::BasicBlock * curBlock = symbolTable.topBlock();
         return llvm::BranchInst::Create(block, curBlock);
     }
     void * visit(ASTBreakStatement * node) {
         llvm::BasicBlock * block = symbolTable.getBS();
+        if (!block) {
+            return ErrorHandler("Incorrect break usage");
+        }
         llvm::BasicBlock * curBlock = symbolTable.topBlock();
         auto localVariables = symbolTable.getLocalVariables();
         symbolTable.popBlock();

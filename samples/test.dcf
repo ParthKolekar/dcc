@@ -1,11 +1,11 @@
 class Program {
     int main() {
         int i;
+            continue;
         for i = 1, 10
         {
             i += 1;
             callout ("printf", "%d", i);
-            continue;
             i += 1;
         }
     }
