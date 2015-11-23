@@ -1,9 +1,12 @@
 class Program {
     int main() {
         int i;
-        return;
         for i = 1, 10
         {
+            if (i == 5) {
+                break;
+            }
+            return 0;
             i += 1;
             callout ("printf", "%d", i);
             i += 1;

@@ -371,9 +371,26 @@ public:
         return this->visit(node->getArgument());
     }
     void * visit(ASTIfStatement * node) {
-        llvm::BasicBlock * ifBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "ifBlock", symbolTable.topBlock()->getParent());
-        llvm::BasicBlock * elseBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "elseBlock", symbolTable.topBlock()->getParent());
-        llvm::BasicBlock * mergeBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "mergeBlock", symbolTable.topBlock()->getParent());
+        llvm::BasicBlock * entryBlock = symbolTable.topBlock();
+        llvm::Value * condition = static_cast<llvm::Value *>(this->visit(node->getCondition()));
+        llvm::ICmpInst * comparison = new llvm::ICmpInst(*entryBlock, llvm::ICmpInst::ICMP_NE, condition, llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), 0, true), "tmp");
+        llvm::BasicBlock * ifBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "ifBlock", entryBlock->getParent());
+        llvm::BasicBlock * mergeBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "mergeBlock", entryBlock->getParent());
+        this->visit(node->getIf_block(), ifBlock);
+        llvm::BranchInst::Create(mergeBlock, ifBlock);
+        if (node->getElse_block()) {
+            llvm::BasicBlock * elseBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "elseBlock", entryBlock->getParent());
+            this->visit(node->getElse_block(), elseBlock);
+            llvm::BranchInst::Create(mergeBlock, elseBlock);
+            llvm::BranchInst::Create(ifBlock, elseBlock, comparison, entryBlock);
+        } else {
+            llvm::BranchInst::Create(ifBlock, mergeBlock, comparison, entryBlock);
+        }
+        auto localVariables = symbolTable.getLocalVariables();
+        symbolTable.popBlock();
+        symbolTable.pushBlock(mergeBlock);
+        symbolTable.setLocalVariables(localVariables);
+        return NULL;
     }
     void * visit(ASTForStatement * node) {
         if (!symbolTable.lookupGlobalVariables(node->getId())) {
@@ -388,8 +405,8 @@ public:
 
         new llvm::StoreInst(static_cast<llvm::Value *>(this->visit(node->getInit_condition())), symbolTable.returnLocalVariables(node->getId()), false, entryBlock);
         llvm::Value * val = new llvm::LoadInst(symbolTable.returnLocalVariables(node->getId()), "load", headerBlock);
-        llvm::ICmpInst* int1_14 = new llvm::ICmpInst(*headerBlock, llvm::ICmpInst::ICMP_NE, val, static_cast<llvm::Value *>(this->visit(node->getEnd_condition())), "tmp");
-        llvm::BranchInst::Create(bodyBlock, afterLoopBlock, int1_14, headerBlock);
+        llvm::ICmpInst * comparison = new llvm::ICmpInst(*headerBlock, llvm::ICmpInst::ICMP_NE, val, static_cast<llvm::Value *>(this->visit(node->getEnd_condition())), "tmp");
+        llvm::BranchInst::Create(bodyBlock, afterLoopBlock, comparison, headerBlock);
         llvm::BranchInst::Create(headerBlock, entryBlock);
 
         symbolTable.pushBlock(bodyBlock);
