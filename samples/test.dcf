@@ -1,7 +1,7 @@
 class Program {
     int main() {
         int i;
-            continue;
+        return;
         for i = 1, 10
         {
             i += 1;

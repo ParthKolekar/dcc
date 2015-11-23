@@ -86,7 +86,7 @@ public:
         if (!userMain)
             return ErrorHandler("No main Found");
         else {
-            llvm::CallInst::Create(userMain, "", symbolTable.topBlock());
+            llvm::CallInst::Create(userMain, "callMain", symbolTable.topBlock());
         }
         return NULL;
     }
@@ -350,7 +350,7 @@ public:
                 args.push_back(static_cast<llvm::Value *>(this->visit(*it)));
             }
         }
-        llvm::CallInst *call = llvm::CallInst::Create(function, llvm::makeArrayRef(args), "", symbolTable.topBlock());
+        llvm::CallInst *call = llvm::CallInst::Create(function, llvm::makeArrayRef(args), node->getMethod_name(), symbolTable.topBlock());
         return call;
     }
     void * visit(ASTCalloutArg * node) { 
@@ -388,7 +388,7 @@ public:
 
         new llvm::StoreInst(static_cast<llvm::Value *>(this->visit(node->getInit_condition())), symbolTable.returnLocalVariables(node->getId()), false, entryBlock);
         llvm::Value * val = new llvm::LoadInst(symbolTable.returnLocalVariables(node->getId()), "load", headerBlock);
-        llvm::ICmpInst* int1_14 = new llvm::ICmpInst(*headerBlock, llvm::ICmpInst::ICMP_NE, val, static_cast<llvm::Value *>(this->visit(node->getEnd_condition())), "");
+        llvm::ICmpInst* int1_14 = new llvm::ICmpInst(*headerBlock, llvm::ICmpInst::ICMP_NE, val, static_cast<llvm::Value *>(this->visit(node->getEnd_condition())), "tmp");
         llvm::BranchInst::Create(bodyBlock, afterLoopBlock, int1_14, headerBlock);
         llvm::BranchInst::Create(headerBlock, entryBlock);
 
@@ -408,11 +408,19 @@ public:
     void * visit(ASTReturnStatement * node) {
         llvm::Function * function = symbolTable.topBlock()->getParent();
         llvm::FunctionType * ftype = function->getFunctionType();
-        if(node->getExpr()) {
-            llvm::Value * expression = static_cast<llvm::Value *>(this->visit(node->getExpr()));
-            return llvm::ReturnInst::Create(llvm::getGlobalContext(), expression, symbolTable.topBlock());
+        if (ftype->isVoidTy()) {
+            if(node->getExpr()) {
+                return ErrorHandler("Unknown Return for Void Type");
+            } else {
+                return llvm::ReturnInst::Create(llvm::getGlobalContext(),symbolTable.topBlock());
+            }
         } else {
-            return llvm::ReturnInst::Create(llvm::getGlobalContext(),symbolTable.topBlock());
+            if (node->getExpr()) {
+                llvm::Value * expression = static_cast<llvm::Value *>(this->visit(node->getExpr()));
+                return llvm::ReturnInst::Create(llvm::getGlobalContext(), expression, symbolTable.topBlock());
+            } else {
+                return ErrorHandler("Void type return for non void function");
+            }
         }
     }
     void * visit(ASTContinueStatement * node) {
