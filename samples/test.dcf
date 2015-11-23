@@ -4,14 +4,12 @@ class Program {
         for i = 0, 10
         {
             i += 1;
+            callout("printf","%d",i);
         }
-        callout("printf","%d",x);  for i = 0, 10
-        {
+        { 
             int c;
-            i += 1;
-            
+            c=2;
         }
-        c = 1;
 
         return;
     }

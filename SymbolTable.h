@@ -67,6 +67,11 @@ public:
 		this->table.pop_front();
 	}
 	llvm::BasicBlock * topBlock() {
+		for (auto it = this->table.begin(); it != this->table.end(); it++) {
+			if (it->block) {
+				return it->block;
+			}
+		}
 		return this->table.front().block;
 	}
 	llvm::BasicBlock * bottomBlock() {

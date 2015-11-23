@@ -64,8 +64,8 @@ public:
     }
     llvm::Value * ErrorHandler(const char * error) {
         std::cerr << error;
-        return 0;
-        // exit(0);
+        // return 0;
+        exit(0);
     }
     void * visit(ASTProgram * node) {
         if (node->getFdl()) {
@@ -201,7 +201,10 @@ public:
             return this->visit(assignmentStatement);
         }
         if (blockStatement) {
-            return this->visit(blockStatement, NULL);
+            symbolTable.pushBlock(NULL);
+            this->visit(blockStatement, NULL);
+            symbolTable.popBlock();
+            return NULL;
         }
         if (methodCall) {
             return this->visit(methodCall);
@@ -380,7 +383,10 @@ public:
         llvm::ICmpInst* int1_14 = new llvm::ICmpInst(*headerBlock, llvm::ICmpInst::ICMP_NE, val, static_cast<llvm::Value *>(this->visit(node->getEnd_condition())), "");
         llvm::BranchInst::Create(bodyBlock, afterLoopBlock, int1_14, headerBlock);
         llvm::BranchInst::Create(headerBlock, entryBlock);
-        this->visit(node->getBlock(), bodyBlock);
+        
+        symbolTable.pushBlock(bodyBlock);
+        this->visit(node->getBlock(), NULL);
+        symbolTable.popBlock();
         llvm::BranchInst::Create(headerBlock, bodyBlock);
         auto localVariables = symbolTable.getLocalVariables();
         symbolTable.popBlock();
