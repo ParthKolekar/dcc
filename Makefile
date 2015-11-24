@@ -1,5 +1,5 @@
 OBJ = dcc
-override CFLAGS += -O3 -flto -Wall -DYYERROR_VERBOSE -std=c++11 `llvm-config --cppflags --libs core jit native` `llvm-config --ldflags`
+override CFLAGS += -O3 -flto -Wall -DYYERROR_VERBOSE -std=c++11 `llvm-config-3.4 --cppflags --libs core jit native` `llvm-config-3.4 --ldflags`
 PREFIX ?= /usr/local
 BINDIR = $(PREFIX)/bin
 CXX ?= g++
