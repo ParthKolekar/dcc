@@ -322,7 +322,7 @@ public:
         if (!function) {
             return ErrorHandler("No Function Defined");
         }
-        // if (function->get)
+        if (function->getFunctionType()->isVoidTy())
         if (node->getArguments()) {
             for (auto it = (node->getArguments())->rbegin(); it != (node->getArguments())->rend(); it++) {
                 args.push_back(static_cast<llvm::Value *>(this->visit(*it)));
