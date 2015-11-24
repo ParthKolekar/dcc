@@ -65,23 +65,19 @@
 %token TRUE
 %token VOID
 
-%nonassoc LESSEQUAL LESSTHAN GREATEREQUAL GREATERTHAN
-
-%left EQUALEQUAL NOTEQUAL
 %left OR
 %left AND
+%token EQUAL PLUSEQUAL MINUSEQUAL
+%left EQUALEQUAL NOTEQUAL
+%nonassoc LESSEQUAL LESSTHAN GREATEREQUAL GREATERTHAN
 %left PLUS MINUS
 %left MULTIPLY DIVIDE MODULO
-
 %precedence NOT UMINUS
-%token EQUAL PLUSEQUAL MINUSEQUAL
 
 %token <sval> IDENTIFIER
-
 %token <ival> INT_VALUE
 %token <sval> STRING_VALUE
 %token <cval> CHAR_VALUE
-
 %type <program> program
 %type <field_decl_list> field_decl_list
 %type <field_decl> field_decl
