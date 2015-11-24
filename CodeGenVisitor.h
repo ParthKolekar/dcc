@@ -322,13 +322,15 @@ public:
         if (!function) {
             return ErrorHandler("No Function Defined");
         }
-        if (function->getFunctionType()->isVoidTy())
         if (node->getArguments()) {
             for (auto it = (node->getArguments())->rbegin(); it != (node->getArguments())->rend(); it++) {
                 args.push_back(static_cast<llvm::Value *>(this->visit(*it)));
             }
         }
-        return llvm::CallInst::Create(function, llvm::makeArrayRef(args), "", symbolTable.topBlock());
+        if (function->getReturnType()->isVoidTy()) {
+            return llvm::CallInst::Create(function, llvm::makeArrayRef(args), "", symbolTable.topBlock());    
+        }
+        return llvm::CallInst::Create(function, llvm::makeArrayRef(args), node->getId(), symbolTable.topBlock());
     }
     void * visit(ASTCalloutMethod * node) {
         llvm::Function * function = module->getFunction(node->getMethod_name());
@@ -434,8 +436,8 @@ public:
     }
     void * visit(ASTReturnStatement * node) {
         llvm::Function * function = symbolTable.topBlock()->getParent();
-        llvm::FunctionType * ftype = function->getFunctionType();
-        if (ftype->isVoidTy()) {
+        llvm::Type * type = function->getReturnType();
+        if (type->isVoidTy()) {
             if(node->getExpr()) {
                 return ErrorHandler("Unknown Return for Void Type");
             } else {
