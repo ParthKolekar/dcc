@@ -322,6 +322,9 @@ public:
         if (!function) {
             return ErrorHandler("No Function Defined");
         }
+        if (!function->isVarArg() && (function->getArgumentList().size() != node->getArguments()->size())) {
+            return ErrorHandler("Invalid Number of Arguments");
+        }
         if (node->getArguments()) {
             for (auto it = (node->getArguments())->rbegin(); it != (node->getArguments())->rend(); it++) {
                 args.push_back(static_cast<llvm::Value *>(this->visit(*it)));
