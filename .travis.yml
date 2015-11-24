@@ -10,7 +10,11 @@ addons:
             - flex
             - llvm
             - clang
-
+	alternatives:
+            - alternative:
+                name: llvm-config
+	        link: /usr/bin/llvm-config
+	        path: /usr/bin/llvm-config-3.4
 dist: trusty
 
 sudo: required
