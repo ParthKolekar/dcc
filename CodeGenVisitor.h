@@ -308,6 +308,12 @@ public:
             case AssignOp::equal: 
                 break;
         }
+        if (!expr->getType()->isIntegerTy(64)) {
+            return ErrorHandler("RHS of assignment statement is invalid");
+        }
+        if (!location->getType()->isPointerTy()) {
+            return ErrorHandler("LHS of assignment statement is invalid");
+        }
         return new llvm::StoreInst(expr, location, false, symbolTable.topBlock());
     }
     void * visit(ASTMethodCall * node) {
