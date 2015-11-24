@@ -177,7 +177,7 @@ public:
             }
         }
         // symbolTable.pushBlock();
-        this->visit(node->getBlock(), NULL);
+        this->visit(node->getBlock());
         if(!symbolTable.topBlock()->getTerminator()) {
             if(node->getReturnType() == Datatype::void_type)
                 llvm::ReturnInst::Create(llvm::getGlobalContext(), symbolTable.topBlock());
@@ -205,7 +205,7 @@ public:
         }
         if (blockStatement) {
             symbolTable.pushBlock(NULL);
-            this->visit(blockStatement, NULL);
+            this->visit(blockStatement);
             symbolTable.popBlock();
             return NULL;
         }
@@ -249,20 +249,6 @@ public:
         else if (calloutArg)
             return this->visit(calloutArg);
         return ErrorHandler("Should Never Be Called"); // Should never be called.
-    }
-    void * visit(ASTBlockStatement * node, llvm::BasicBlock * inject) {
-        if (inject) {
-            symbolTable.pushBlock(inject);
-            this->visit(node);
-            symbolTable.popBlock();
-        } else {
-            // You are in the same block, but have a new scope. 
-            // symbolTable.pushBlock(symbolTable.topBlock());
-            this->visit(node);
-            // symbolTable.popBlock();
-        }
-
-        return NULL;
     }
     void * visit(ASTBlockStatement * node) {
         if(node->getId_list()){
@@ -336,6 +322,7 @@ public:
         if (!function) {
             return ErrorHandler("No Function Defined");
         }
+        // if (function->get)
         if (node->getArguments()) {
             for (auto it = (node->getArguments())->rbegin(); it != (node->getArguments())->rend(); it++) {
                 args.push_back(static_cast<llvm::Value *>(this->visit(*it)));
@@ -385,7 +372,7 @@ public:
         llvm::BasicBlock * returnedBlock = NULL;
 
         symbolTable.pushBlock(ifBlock);
-        this->visit(node->getIf_block(), NULL);
+        this->visit(node->getIf_block());
         returnedBlock = symbolTable.topBlock();
         symbolTable.popBlock();
         if (!returnedBlock->getTerminator()) {
@@ -396,7 +383,7 @@ public:
             llvm::BasicBlock * elseBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "elseBlock", entryBlock->getParent());
             
             symbolTable.pushBlock(elseBlock);
-            this->visit(node->getElse_block(), NULL);
+            this->visit(node->getElse_block());
             returnedBlock = symbolTable.topBlock();
             symbolTable.popBlock();
             if (!returnedBlock->getTerminator()) {
@@ -430,7 +417,7 @@ public:
         llvm::BranchInst::Create(headerBlock, entryBlock);
 
         symbolTable.pushBlock(bodyBlock);
-        this->visit(node->getBlock(), NULL);
+        this->visit(node->getBlock());
         bodyBlock = symbolTable.topBlock();
         symbolTable.popBlock();
         if (!bodyBlock->getTerminator()) {
