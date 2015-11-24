@@ -12,6 +12,7 @@ class Program
     {
 	int x, i, j, t;
         int z;
+    int a;
         
 	x = A[p];
 	i = p - 1;
@@ -24,6 +25,7 @@ class Program
 		break;
 	      }
 	      j = j - 1;
+          a = a + 1;
 	    }
 
 	    for a = i + 1, length {
@@ -31,6 +33,7 @@ class Program
 		i = a;
 		break;
 	      }
+          a = a +1;
 	    }
 
    	    if (i < j) {
@@ -40,6 +43,7 @@ class Program
   	    } else {
  		return j;
   	    }
+        z = z+1;
   	}
 	return -1;
     }
@@ -58,6 +62,7 @@ class Program
     void main() 
     {
 	int temp;
+    int i;
         
 	length = 10; // adjust for sort length
         
@@ -68,18 +73,21 @@ class Program
 	for i = 0, length {
             temp = callout("random");
             A[i] = temp;
+            i = i + 1;
         }
         
         callout("printf", "\nbefore sort:\n");
 	for i = 0, length {
-   	    callout ("printf", "%d\n", A[i]); 
+   	    callout ("printf", "%d  ", A[i]); 
+        i = i + 1;
         }
         
         quicksort (0, length - 1);
 
         callout("printf", "\nafter sort\n");
 	for i = 0, length {
-	  callout ("printf", "%d\n", A[i]); 
+	  callout ("printf", "%d ", A[i]); 
+      i = i + 1;
   	}
     }
 }

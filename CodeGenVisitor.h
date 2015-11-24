@@ -86,7 +86,7 @@ public:
         if (!userMain)
             return ErrorHandler("No main Found");
         else {
-            llvm::CallInst::Create(userMain, "callMain", symbolTable.topBlock());
+            llvm::CallInst::Create(userMain, "", symbolTable.topBlock());
         }
         return NULL;
     }
@@ -134,6 +134,9 @@ public:
         }
     }
     void * visit(ASTArrayIdentifier * node) {
+        if (node->getSize() <= 1) {
+            return ErrorHandler("Invalid Array Size");
+        }
         llvm::GlobalVariable* variable = new llvm::GlobalVariable(*module, llvm::ArrayType::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), node->getSize()), false, llvm::GlobalValue::CommonLinkage, NULL, node->getId());
         variable->setInitializer(llvm::ConstantAggregateZero::get(llvm::ArrayType::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), node->getSize())));
         symbolTable.declareLocalVariables(node->getId(), variable);
@@ -281,15 +284,17 @@ public:
     }
     void * visit(ASTAssignmentStatement * node) {
         llvm::Value * location = NULL;
-        llvm::Value * exsitingValue = NULL;
+        llvm::Value * existingValue = NULL;
         ASTVarLocation * varLocation = dynamic_cast<ASTVarLocation *>(node->getLocation());
         ASTArrayLocation * arrayLocation = dynamic_cast<ASTArrayLocation *>(node->getLocation());
         if (arrayLocation) {
             if (!symbolTable.lookupGlobalVariables(arrayLocation->getId())) {
                 return ErrorHandler("Variable Not Declared");
             }
+            std::vector <llvm::Value *> index;
+            index.push_back(llvm::ConstantInt::get(llvm::getGlobalContext(), llvm::APInt(64, llvm::StringRef("0"), 10)));
+            index.push_back(static_cast<llvm::Value *>(this->visit(arrayLocation->getIndex())));
             llvm::Value * val = symbolTable.returnLocalVariables(arrayLocation->getId());
-            llvm::Value * index = static_cast<llvm::Value *>(this->visit(arrayLocation->getIndex()));
             location = llvm::GetElementPtrInst::CreateInBounds(val, index, "tmp", symbolTable.topBlock());
         }
         if (varLocation) {
@@ -301,12 +306,12 @@ public:
         llvm::Value * expr = static_cast<llvm::Value *>(this->visit(node->getExpr()));
         switch(node->getOp()) {
             case AssignOp::plus_equal:
-                exsitingValue = new llvm::LoadInst(location, "load", symbolTable.topBlock());
-                expr = llvm::BinaryOperator::Create(llvm::Instruction::Add, exsitingValue, expr, "tmp", symbolTable.topBlock());
+                existingValue = new llvm::LoadInst(location, "load", symbolTable.topBlock());
+                expr = llvm::BinaryOperator::Create(llvm::Instruction::Add, existingValue, expr, "tmp", symbolTable.topBlock());
                 break;
             case AssignOp::minus_equal: 
-                exsitingValue = new llvm::LoadInst(location, "load", symbolTable.topBlock());
-                expr = llvm::BinaryOperator::Create(llvm::Instruction::Sub, exsitingValue, expr, "tmp", symbolTable.topBlock());
+                existingValue = new llvm::LoadInst(location, "load", symbolTable.topBlock());
+                expr = llvm::BinaryOperator::Create(llvm::Instruction::Sub, existingValue, expr, "tmp", symbolTable.topBlock());
                 break;
             case AssignOp::equal: 
                 break;
@@ -335,8 +340,8 @@ public:
             for (auto it = (node->getArguments())->rbegin(); it != (node->getArguments())->rend(); it++) {
                 args.push_back(static_cast<llvm::Value *>(this->visit(*it)));
             }
-        } 
-        return llvm::CallInst::Create(function, llvm::makeArrayRef(args), node->getId(), symbolTable.topBlock());
+        }
+        return llvm::CallInst::Create(function, llvm::makeArrayRef(args), "", symbolTable.topBlock());
     }
     void * visit(ASTCalloutMethod * node) {
         llvm::Function * function = module->getFunction(node->getMethod_name());
@@ -376,12 +381,27 @@ public:
         llvm::ICmpInst * comparison = new llvm::ICmpInst(*entryBlock, llvm::ICmpInst::ICMP_NE, condition, llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), 0, true), "tmp");
         llvm::BasicBlock * ifBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "ifBlock", entryBlock->getParent());
         llvm::BasicBlock * mergeBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "mergeBlock", entryBlock->getParent());
-        this->visit(node->getIf_block(), ifBlock);
-        llvm::BranchInst::Create(mergeBlock, ifBlock);
+
+        llvm::BasicBlock * returnedBlock = NULL;
+
+        symbolTable.pushBlock(ifBlock);
+        this->visit(node->getIf_block(), NULL);
+        returnedBlock = symbolTable.topBlock();
+        symbolTable.popBlock();
+        if (!returnedBlock->getTerminator()) {
+            llvm::BranchInst::Create(mergeBlock, returnedBlock);
+        }
+
         if (node->getElse_block()) {
             llvm::BasicBlock * elseBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "elseBlock", entryBlock->getParent());
-            this->visit(node->getElse_block(), elseBlock);
-            llvm::BranchInst::Create(mergeBlock, elseBlock);
+            
+            symbolTable.pushBlock(elseBlock);
+            this->visit(node->getElse_block(), NULL);
+            returnedBlock = symbolTable.topBlock();
+            symbolTable.popBlock();
+            if (!returnedBlock->getTerminator()) {
+                llvm::BranchInst::Create(mergeBlock, returnedBlock);
+            }
             llvm::BranchInst::Create(ifBlock, elseBlock, comparison, entryBlock);
         } else {
             llvm::BranchInst::Create(ifBlock, mergeBlock, comparison, entryBlock);
@@ -411,8 +431,11 @@ public:
 
         symbolTable.pushBlock(bodyBlock);
         this->visit(node->getBlock(), NULL);
+        bodyBlock = symbolTable.topBlock();
         symbolTable.popBlock();
-        llvm::BranchInst::Create(headerBlock, bodyBlock);
+        if (!bodyBlock->getTerminator()) {
+            llvm::BranchInst::Create(headerBlock, bodyBlock);
+        }
 
         auto localVariables = symbolTable.getLocalVariables();
         symbolTable.popBlock();
@@ -483,7 +506,7 @@ public:
             return ErrorHandler("Variable Not Declared");
         }
         std::vector <llvm::Value *> index;
-        index.push_back(llvm::ConstantInt::get(llvm::getGlobalContext(), llvm::APInt(32, llvm::StringRef("0"), 10)));
+        index.push_back(llvm::ConstantInt::get(llvm::getGlobalContext(), llvm::APInt(64, llvm::StringRef("0"), 10)));
         index.push_back(static_cast<llvm::Value *>(this->visit(node->getIndex())));
         llvm::Value * val = symbolTable.returnLocalVariables(node->getId());
         llvm::Value * offset = llvm::GetElementPtrInst::CreateInBounds(val, index, "tmp", symbolTable.topBlock());
@@ -537,17 +560,17 @@ public:
             case BinOp::modulo_op: 
                 return llvm::BinaryOperator::Create(llvm::Instruction::SRem, static_cast<llvm::Value*>(this->visit(node->getLeft())), static_cast<llvm::Value*>(this->visit(node->getRight())), "tmp", symbolTable.topBlock());
             case BinOp::lessthan_op: 
-                return new llvm::ZExtInst(llvm::CmpInst::Create(llvm::Instruction::ICmp, llvm::ICmpInst::ICMP_SLT, static_cast<llvm::Value*>(this->visit(node->getLeft())), static_cast<llvm::Value*>(this->visit(node->getRight())),"tmp", symbolTable.topBlock()), llvm::Type::getInt64Ty(llvm::getGlobalContext()));
+                return new llvm::ZExtInst(llvm::CmpInst::Create(llvm::Instruction::ICmp, llvm::ICmpInst::ICMP_SLT, static_cast<llvm::Value*>(this->visit(node->getLeft())), static_cast<llvm::Value*>(this->visit(node->getRight())),"tmp", symbolTable.topBlock()), llvm::Type::getInt64Ty(llvm::getGlobalContext()), "zext", symbolTable.topBlock());
             case BinOp::greaterthan_op: 
-                return new llvm::ZExtInst(llvm::CmpInst::Create(llvm::Instruction::ICmp, llvm::ICmpInst::ICMP_SGT, static_cast<llvm::Value*>(this->visit(node->getLeft())), static_cast<llvm::Value*>(this->visit(node->getRight())),"tmp", symbolTable.topBlock()), llvm::Type::getInt64Ty(llvm::getGlobalContext()));
+                return new llvm::ZExtInst(llvm::CmpInst::Create(llvm::Instruction::ICmp, llvm::ICmpInst::ICMP_SGT, static_cast<llvm::Value*>(this->visit(node->getLeft())), static_cast<llvm::Value*>(this->visit(node->getRight())),"tmp", symbolTable.topBlock()), llvm::Type::getInt64Ty(llvm::getGlobalContext()), "zext", symbolTable.topBlock());
             case BinOp::lessequal_op: 
-                return new llvm::ZExtInst(llvm::CmpInst::Create(llvm::Instruction::ICmp, llvm::ICmpInst::ICMP_SLE, static_cast<llvm::Value*>(this->visit(node->getLeft())), static_cast<llvm::Value*>(this->visit(node->getRight())),"tmp", symbolTable.topBlock()), llvm::Type::getInt64Ty(llvm::getGlobalContext()));
+                return new llvm::ZExtInst(llvm::CmpInst::Create(llvm::Instruction::ICmp, llvm::ICmpInst::ICMP_SLE, static_cast<llvm::Value*>(this->visit(node->getLeft())), static_cast<llvm::Value*>(this->visit(node->getRight())),"tmp", symbolTable.topBlock()), llvm::Type::getInt64Ty(llvm::getGlobalContext()), "zext", symbolTable.topBlock());
             case BinOp::greaterequal_op: 
-                return new llvm::ZExtInst(llvm::CmpInst::Create(llvm::Instruction::ICmp, llvm::ICmpInst::ICMP_SGE, static_cast<llvm::Value*>(this->visit(node->getLeft())), static_cast<llvm::Value*>(this->visit(node->getRight())),"tmp", symbolTable.topBlock()), llvm::Type::getInt64Ty(llvm::getGlobalContext()));
+                return new llvm::ZExtInst(llvm::CmpInst::Create(llvm::Instruction::ICmp, llvm::ICmpInst::ICMP_SGE, static_cast<llvm::Value*>(this->visit(node->getLeft())), static_cast<llvm::Value*>(this->visit(node->getRight())),"tmp", symbolTable.topBlock()), llvm::Type::getInt64Ty(llvm::getGlobalContext()), "zext", symbolTable.topBlock());
             case BinOp::notequal_op: 
-                return new llvm::ZExtInst(llvm::CmpInst::Create(llvm::Instruction::ICmp, llvm::ICmpInst::ICMP_NE, static_cast<llvm::Value*>(this->visit(node->getLeft())), static_cast<llvm::Value*>(this->visit(node->getRight())),"tmp", symbolTable.topBlock()), llvm::Type::getInt64Ty(llvm::getGlobalContext()));
+                return new llvm::ZExtInst(llvm::CmpInst::Create(llvm::Instruction::ICmp, llvm::ICmpInst::ICMP_NE, static_cast<llvm::Value*>(this->visit(node->getLeft())), static_cast<llvm::Value*>(this->visit(node->getRight())),"tmp", symbolTable.topBlock()), llvm::Type::getInt64Ty(llvm::getGlobalContext()), "zext", symbolTable.topBlock());
             case BinOp::equalequal_op: 
-                return new llvm::ZExtInst(llvm::CmpInst::Create(llvm::Instruction::ICmp, llvm::ICmpInst::ICMP_EQ, static_cast<llvm::Value*>(this->visit(node->getLeft())), static_cast<llvm::Value*>(this->visit(node->getRight())),"tmp", symbolTable.topBlock()), llvm::Type::getInt64Ty(llvm::getGlobalContext()));
+                return new llvm::ZExtInst(llvm::CmpInst::Create(llvm::Instruction::ICmp, llvm::ICmpInst::ICMP_EQ, static_cast<llvm::Value*>(this->visit(node->getLeft())), static_cast<llvm::Value*>(this->visit(node->getRight())),"tmp", symbolTable.topBlock()), llvm::Type::getInt64Ty(llvm::getGlobalContext()), "zext", symbolTable.topBlock());
             case BinOp::and_op: 
                 return llvm::BinaryOperator::Create(llvm::Instruction::And, static_cast<llvm::Value*>(this->visit(node->getLeft())), static_cast<llvm::Value*>(this->visit(node->getRight())), "tmp", symbolTable.topBlock());
             case BinOp::or_op: 

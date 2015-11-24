@@ -25,6 +25,7 @@ class Program
         for j = 0, size {
             x = max (0,x+a[j]);
             y = max (y,x);
+            j = j+1;
         }
         return y;
     }
@@ -33,17 +34,20 @@ class Program
     {
         int sum; 
         int ar;
-        sum = callout("get_int");
-        for j=0, N {
-		a[j] = callout("get_int");
-	}
-        
-        
+        int N;
+        N = 5;
+        a[0] = 1;
+        a[1] = -1;
+        a[2] = 3;
+        a[3] = 4;
+        a[4] = -100;
         ar = maxsum (N);
 
         for j = 0, N {
-            callout("printf", "%d", a[j]);
+            callout("printf", "%d ", a[j]);
+            j = j+1;
         }
+        callout("printf", "%d", ar);
     }
 }
 

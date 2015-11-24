@@ -48,6 +48,7 @@ public:
 			this->table.front().localVariables.insert(std::pair<std::string, llvm::Value *>(name, value));
 		} else {
 			std::cerr<<"Variable "<<name<<" already declared";
+			exit(0);
 		}
 	}
 	bool lookupGlobalVariables(std::string name) {
