@@ -21,3 +21,4 @@ dist: trusty
 
 script:
     - make 
+    - ./testcases.sh
