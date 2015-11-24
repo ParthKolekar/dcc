@@ -192,6 +192,12 @@ public:
         return NULL; 
     }
     void * visit(ASTStatement * node) { 
+        llvm::BasicBlock * block = symbolTable.topBlock();
+        if (block->getTerminator()) {
+            // terminate any and all instructions which end the current block when there are still instructions to do
+            llvm::Instruction * terminator = block->getTerminator();
+            terminator->eraseFromParent();
+        }
         ASTAssignmentStatement * assignmentStatement = dynamic_cast<ASTAssignmentStatement *>(node);
         ASTBlockStatement * blockStatement = dynamic_cast<ASTBlockStatement *>(node);
         ASTMethodCall * methodCall = dynamic_cast<ASTMethodCall *>(node);
@@ -263,7 +269,7 @@ public:
                 ASTBreakStatement * breakStatement = dynamic_cast<ASTBreakStatement *>(*it);
                 ASTContinueStatement * continueStatement = dynamic_cast<ASTContinueStatement *>(*it);
                 if (returnStatement or breakStatement or continueStatement) 
-                    break;
+                    break;                
             }
         }
         return NULL;
@@ -322,7 +328,7 @@ public:
         if (!function) {
             return ErrorHandler("No Function Defined");
         }
-        if (!function->isVarArg() && (function->getArgumentList().size() != node->getArguments()->size())) {
+        if (!function->isVarArg() && (node->getArguments()) && (function->getArgumentList().size() != node->getArguments()->size())) {
             return ErrorHandler("Invalid Number of Arguments");
         }
         if (node->getArguments()) {
@@ -383,7 +389,6 @@ public:
         if (!returnedBlock->getTerminator()) {
             llvm::BranchInst::Create(mergeBlock, returnedBlock);
         }
-
         if (node->getElse_block()) {
             llvm::BasicBlock * elseBlock = llvm::BasicBlock::Create(llvm::getGlobalContext(), "elseBlock", entryBlock->getParent());
             
