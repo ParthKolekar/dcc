@@ -1,0 +1,26 @@
+
+class Program {
+    int a[10];
+
+    int x(int a){
+
+	    if(a==0)
+	    {
+		    return 1;
+	    }
+	    else
+	    {
+		    return (a*x(a-1));
+
+   		 }
+    }
+
+    int main() {
+	    int y;
+	    y= x(4);
+                    callout("printf", "%d",y);
+            }
+    
+        }
+    
+
