@@ -338,7 +338,7 @@ public:
             return ErrorHandler("Invalid Number of Arguments");
         }
         if (node->getArguments()) {
-            for (auto it = (node->getArguments())->rbegin(); it != (node->getArguments())->rend(); it++) {
+            for (auto it = (node->getArguments())->begin(); it != (node->getArguments())->end(); it++) {
                 args.push_back(static_cast<llvm::Value *>(this->visit(*it)));
             }
         }

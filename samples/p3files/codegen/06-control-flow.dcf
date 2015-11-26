@@ -8,6 +8,7 @@ class Program
 	sum = 0;
 	for j = 0, 10 {
             sum += j;
+	    j += 1;
         }
 
         if (sum != 45) {
@@ -18,6 +19,7 @@ class Program
         
         for j = 10, 0 {
 	  i += 1;
+	  j -= 1;
 	}
 
         if (i != 11) {
