@@ -1,0 +1,25 @@
+
+class Program {
+    int a[10];
+    int main(){
+    }
+    int main() {
+        int i;
+        a[1] = 1;
+        return 0;
+        for i = 0, 2
+        {
+            int j;
+            for j = 0, 2
+            {
+                if (j % 2 == 0) {
+                    callout("printf", "y  ");
+                } else {
+                    callout("printf", "n  ");
+                }
+                j += 1;
+            }
+            i += 1;
+        }
+    }
+}

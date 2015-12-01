@@ -78,12 +78,16 @@ public:
         if (node->getMdl()) {
             for(auto it = (node->getMdl())->begin() ; it != (node->getMdl())->end(); it++) {
                 iterator = static_cast<llvm::Function *>(this->visit(*it));
+                if ((*it)->getId() == "main" && userMain) {
+                    return ErrorHandler("Multiple decaration of main method");
+                }
                 if ((*it)->getId() == "main" && !userMain) {
                     userMain = iterator;
                 }
                 if ((*it)->getId() == "main" && (*it)->getArguments()) {
                     return ErrorHandler("Main cannot have any arguments");
                 }
+
             }               
         }
         if (!userMain)
