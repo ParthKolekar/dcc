@@ -1,7 +1,7 @@
 
 class Program {
     int a[10];
-    int main(int x1) {
+    int main() {
         int i;
         a[1] = 1;
         return 0;
