@@ -63,7 +63,7 @@ public:
         PM.run(*module);
     }
     llvm::Value * ErrorHandler(const char * error) {
-        std::cerr << error;
+        std::cerr << error <<std::endl;
         // return 0;
         exit(0);
     }
@@ -77,10 +77,14 @@ public:
         llvm::Function * userMain = NULL;
         if (node->getMdl()) {
             for(auto it = (node->getMdl())->begin() ; it != (node->getMdl())->end(); it++) {
-                iterator = static_cast<llvm::Function *>(this->visit(*it));
-                if ((*it)->getId() == "main" && userMain) {
-                    return ErrorHandler("Multiple decaration of main method");
+                if(module->getFunction((*it)->getId()) && (*it)->getId() != "main") {
+                std::cerr << "Multiple Declaration of function " << (*it)->getId() <<std::endl;
+                exit(0);
                 }
+                if ((*it)->getId() == "main" && userMain) {
+                    return ErrorHandler("Multiple Declaration of main");
+                }
+                iterator = static_cast<llvm::Function *>(this->visit(*it));
                 if ((*it)->getId() == "main" && !userMain) {
                     userMain = iterator;
                 }
