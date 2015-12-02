@@ -12,6 +12,7 @@ class Program
 	for j = 0, 1000 {
             x[j] = j;
             y[j] = 0;
+            j+=1;
 
         }
         
@@ -28,13 +29,15 @@ class Program
 	  d = d + c;
 	  
 	  y[i] = d;
+      j+=1;
 	}	
 
         
 	for j = 0, 1000 {
             callout("printf", "%d ", y[j]);
+            j+=1;
         }
         
-        callout("printf", "\n");
+        callout("printf", " ");
     }
 }

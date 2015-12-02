@@ -11,6 +11,7 @@ class Program
     int partition(int p, int r) 
     {
 	int x, i, j, t;
+  int a;
         int z;
         
 	x = A[p];
@@ -19,11 +20,12 @@ class Program
 
   	for z = 0, length * length {
 	  j = j - 1;
-	    for a = 0, length {
+	 for a = 0, length {
 	      if (A[j] <= x) {
 		break;
 	      }
 	      j = j - 1;
+        a = a + 1;
 	    }
 
 	    for a = i + 1, length {
@@ -31,6 +33,7 @@ class Program
 		i = a;
 		break;
 	      }
+        a = a + 1;
 	    }
 
    	    if (i < j) {
@@ -58,28 +61,34 @@ class Program
     void main() 
     {
 	int temp;
+  int i;
         
 	length = 10; // adjust for sort length
         
-        callout("printf", "creating random array of %d elements\n", length);
+        callout("printf", "creating random array of %d elements ", length);
 
-        callout("srandom", 17);
+	temp = callout("time", 0);
+
+        callout("srandom", temp);
         
 	for i = 0, length {
             temp = callout("random");
             A[i] = temp;
+            i = i + 1;
         }
         
-        callout("printf", "\nbefore sort:\n");
+        callout("printf", " before sort: ");
 	for i = 0, length {
-   	    callout ("printf", "%d\n", A[i]); 
+   	    callout ("printf", "%d ", A[i]);
+        i = i + 1; 
         }
         
         quicksort (0, length - 1);
 
-        callout("printf", "\nafter sort\n");
+        callout("printf", " after sort ");
 	for i = 0, length {
-	  callout ("printf", "%d\n", A[i]); 
+	  callout ("printf", "%d ", A[i]);
+    i = i + 1; 
   	}
     }
 }

@@ -27,12 +27,12 @@ class Program
         d = sub(c, b);
 
         if (d == a) {
-            callout("printf", "correct\n");
+            callout("printf", "correct ");
         } else {
-            callout("printf", "INCORRECT %d %d\n", a , d);
+            callout("printf", "INCORRECT %d %d ", a , d);
         }
 
-        callout("printf", "sum of 1 - 8 is %d (36)\n",
+        callout("printf", "sum of 1 - 8 is %d (36) ",
                 sum(1,2,3,4,5,6,7,8));
     }
 }

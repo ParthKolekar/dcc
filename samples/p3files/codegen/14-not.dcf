@@ -1,0 +1,44 @@
+class Program
+{
+
+	void main()
+	{
+		boolean a, b, c;
+		callout("printf", "should see 6 corrects and no incorrects ");
+		a = (0 == 0);
+		b = (0 - 3) == 1;
+		c = ! a;
+		if (! a ) {
+			callout("printf", "INCORRECT ");
+		} else {
+			callout("printf", "correct ");
+		}
+		if (! b ) {
+			callout("printf", "correct ");
+		} else {
+			callout("printf", "INCORRECT ");
+		}
+		if (c) {
+			callout("printf", "INCORRECT ");
+		} else {
+			callout("printf", "correct ");
+		}
+		if (! ! c ) {
+			callout("printf", "INCORRECT ");
+		} else {
+			callout("printf", "correct "); 
+		}
+		if (! ! ! c) {
+			callout("printf", "correct ");
+		} else {
+			callout("printf", "INCORRECT ");
+		}
+		c = ! ! a;
+		if ( ! a != c) {
+			callout("printf", "correct ");
+		} else {
+			callout("printf", "INCORRECT ");
+		}
+	}
+}
+

@@ -6,17 +6,19 @@ class Program
     {
         int j;
 
-        callout("printf", "below output should be 18 16 14 12 10 8 6 4 2 0\n");
+        callout("printf", "below output should be 18 16 14 12 10 8 6 4 2 0 ");
 
         for j = 0, 10 {
             array[j] = j*2;
+            j+=1;
         }
         
 
 	for j = 0, 10 {
             callout("printf", "%d ", array[9 - j]);
+            j+=1;
         }
         
-        callout("printf", "\n");
+        callout("printf", " ");
     }
 }

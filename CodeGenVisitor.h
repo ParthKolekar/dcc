@@ -140,6 +140,7 @@ public:
         }
         else {
             llvm::AllocaInst * allocaInst = new llvm::AllocaInst(llvm::Type::getInt64Ty(llvm::getGlobalContext()), node->getId(), symbolTable.topBlock());
+            new llvm::StoreInst(llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), 0, true), allocaInst, false, symbolTable.topBlock());
             symbolTable.declareLocalVariables(node->getId(), allocaInst);
             return allocaInst;
         }
@@ -383,8 +384,25 @@ public:
         return ErrorHandler("Should Never Be Called"); // Should never be called.
     }
     void * visit(ASTStringCalloutArg * node) {
-        llvm::GlobalVariable* variable = new llvm::GlobalVariable(*module, llvm::ArrayType::get(llvm::IntegerType::get(llvm::getGlobalContext(), 8), node->getArgument().size() + 1), true, llvm::GlobalValue::InternalLinkage, NULL, "string");
-        variable->setInitializer(llvm::ConstantDataArray::getString(llvm::getGlobalContext(), node->getArgument(), true));
+        // std::cout<<node->getArgument()<<std::endl;
+        std::string argument = node->getArgument();
+        // for (auto it = node->getArgument().begin(); it+1 != node->getArgument().end();it++) {
+        // if(*it=='\\' && *(it+1)=='n')
+        // {
+        //     argument.push_back('\n');
+        // }
+        // else if(*it=='n' && *(it-1)=='\\')
+        // {
+        //     continue;
+        // }
+        // else
+        // {
+        //     argument.push_back(*it);
+        // }
+        // }
+        // std::cout<<argument<<std::endl;
+        llvm::GlobalVariable* variable = new llvm::GlobalVariable(*module, llvm::ArrayType::get(llvm::IntegerType::get(llvm::getGlobalContext(), 8), argument.size() + 1), true, llvm::GlobalValue::InternalLinkage, NULL, "string");
+        variable->setInitializer(llvm::ConstantDataArray::getString(llvm::getGlobalContext(), argument, true));
         return variable;
     }
     void * visit(ASTExpressionCalloutArg * node) {
@@ -597,7 +615,7 @@ public:
             case UnOp::minus_op: 
                 return llvm::BinaryOperator::Create(llvm::Instruction::Sub, llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), 0, true), static_cast<llvm::Value*>(this->visit(node->getExpr())), "tmp", symbolTable.topBlock());
             case UnOp::not_op: 
-                return llvm::BinaryOperator::Create(llvm::Instruction::Xor, llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), -1, true), static_cast<llvm::Value*>(this->visit(node->getExpr())), "tmp", symbolTable.topBlock());
+                return new llvm::ZExtInst(llvm::CmpInst::Create(llvm::Instruction::ICmp, llvm::ICmpInst::ICMP_EQ, llvm::ConstantInt::get(llvm::Type::getInt64Ty(llvm::getGlobalContext()), 0, true), static_cast<llvm::Value*>(this->visit(node->getExpr())),"tmp", symbolTable.topBlock()), llvm::Type::getInt64Ty(llvm::getGlobalContext()), "zext", symbolTable.topBlock());
         }
         return ErrorHandler("No Known UnaryOperator");
     }

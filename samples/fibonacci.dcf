@@ -14,8 +14,8 @@ class Program
 		int n;
 		int a;
 		n = 10;
-		callout("printf","%d",n);
+		callout("printf","%d\n",n);
 		a=fibo(n);
-		callout("printf","%d",a);
+		callout("printf","%d\n",a);
 	}
 }

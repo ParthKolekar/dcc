@@ -1,0 +1,8 @@
+class Program
+{
+	int main()
+	{
+		callout("printf","shrenikjain\n");
+		return 0;
+	}
+}

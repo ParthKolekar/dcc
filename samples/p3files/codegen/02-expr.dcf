@@ -14,7 +14,7 @@ class Program
 
         e = d * e - 100;
 
-        callout("printf", "%d %d\n", d, e);
+        callout("printf", " %d %d ", d, e);
     }
 }
 

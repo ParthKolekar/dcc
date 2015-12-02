@@ -1,0 +1,9 @@
+Multiple declaration of main method	Handled
+Check the arguments of main.		Handled
+Multiple declarations of a function	Handled
+For loop handle.
+Encode “\n” to ‘\n
+Check function -> Variable same names
+Set all initial variables to 0
+Shortcircuiting
+Check types in if, for and return, and other things too.

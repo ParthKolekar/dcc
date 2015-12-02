@@ -1,0 +1,21 @@
+class program
+{
+	int a;
+	int main()
+	{
+		{
+			int a;
+			{
+				int a;
+				a=50;
+				callout("printf","%d",a);
+
+			}
+			a= 10;
+			callout("printf","%d",a);
+
+		}	
+		callout("printf","%d",a);
+		return 1;
+	}
+}

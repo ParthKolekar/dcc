@@ -73,25 +73,25 @@ class Program
         callout("printf","[");
         phw(true,true,true,true,false,true,true,false,true,true);
         callout("printf","]");
-        callout("printf","\n");
+        callout("printf"," ");
 
         if (2 > (3 - 5)*2)
 	{
-            callout("printf","should be here\n");
+            callout("printf","should be here ");
 
 	    if (2 > 5)
 	    {
-                callout("printf","should not be here\n");
+                callout("printf","should not be here ");
 	    }
 	    else
 	    {
-                callout("printf","should be here\n");
+                callout("printf","[Hello World] should be here ");
 	    }
 	} 
 
 	else 
 	{
-            callout("printf","should not be here\n");
+            callout("printf","should not be here ");
 	}
      
     }
