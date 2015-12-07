@@ -78,7 +78,7 @@ public:
         if (node->getMdl()) {
             for(auto it = (node->getMdl())->begin() ; it != (node->getMdl())->end(); it++) {
                 if(module->getFunction((*it)->getId()) && (*it)->getId() != "main") {
-                    return ErrorHandler("Multiple Declaration of " + (*it)->getId());
+                    return ErrorHandler("Multiple Declaration of function");
                 }
                 if ((*it)->getId() == "main" && userMain) {
                     return ErrorHandler("Multiple Declaration of main");
