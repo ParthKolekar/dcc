@@ -78,8 +78,7 @@ public:
         if (node->getMdl()) {
             for(auto it = (node->getMdl())->begin() ; it != (node->getMdl())->end(); it++) {
                 if(module->getFunction((*it)->getId()) && (*it)->getId() != "main") {
-                std::cerr << "Multiple Declaration of function " << (*it)->getId() <<std::endl;
-                exit(0);
+                    return ErrorHandler("Multiple Declaration of " + (*it)->getId());
                 }
                 if ((*it)->getId() == "main" && userMain) {
                     return ErrorHandler("Multiple Declaration of main");
@@ -91,7 +90,6 @@ public:
                 if ((*it)->getId() == "main" && (*it)->getArguments()) {
                     return ErrorHandler("Main cannot have any arguments");
                 }
-
             }               
         }
         if (!userMain)
