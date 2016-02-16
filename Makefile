@@ -6,7 +6,7 @@ CXX ?= g++
 LEX = flex 
 YACC = bison -d --report=all --warnings=all
 
-$(OBJ) : $(OBJ).tab.o lex.yy.o main.o PrintVisitor.h CodeGenVisitor.h
+$(OBJ) : $(OBJ).tab.o lex.yy.o main.o CodeGenVisitor.h
 	$(CXX) -o $@ $(OBJ).tab.o lex.yy.o main.o $(CFLAGS) 
 
 %.o : %.c 

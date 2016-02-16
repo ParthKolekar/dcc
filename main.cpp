@@ -2,7 +2,6 @@
 #include <cstdio>
 #include "AST.h"
 #include "Visitor.h"
-#include "PrintVisitor.h"
 #include "CodeGenVisitor.h"
 
 extern "C" FILE *yyin; 
@@ -30,8 +29,6 @@ int main (const int argc, const char ** argv) {
     if (!yyparse()) {
         CodeGenVisitor * visitor = new CodeGenVisitor(start);
         visitor->codeGen();
-        // PrintVisitor * visitor = new PrintVisitor();
-        // visitor->visit(start);
     }
     return 0;
 }

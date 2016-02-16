@@ -72,77 +72,77 @@ enum class UnOp : char {
 };
 
 class ASTNode {
-public:
-    ASTNode() {
-    }
-    ~ASTNode() {
-    }
-    virtual void accept(Visitor * v) = 0;
-    std::string parseBinOp(BinOp op){
-        switch(op){
-            case BinOp::plus_op: 
-            return "+";
-            case BinOp::minus_op: 
-            return "-";
-            case BinOp::multiply_op: 
-            return "*";
-            case BinOp::divide_op: 
-            return "/";
-            case BinOp::modulo_op: 
-            return "%";
-            case BinOp::lessthan_op: 
-            return "<";
-            case BinOp::greaterthan_op: 
-            return ">";
-            case BinOp::lessequal_op: 
-            return "<=";
-            case BinOp::greaterequal_op: 
-            return ">=";
-            case BinOp::notequal_op: 
-            return "!=";
-            case BinOp::equalequal_op: 
-            return "==";
-            case BinOp::and_op: 
-            return "&&";
-            case BinOp::or_op: 
-            return "||";
+    public:
+        ASTNode() {
         }
-        return "";
-    }
+        ~ASTNode() {
+        }
+        virtual void accept(Visitor * v) = 0;
+        std::string parseBinOp(BinOp op){
+            switch(op){
+                case BinOp::plus_op: 
+                    return "+";
+                case BinOp::minus_op: 
+                    return "-";
+                case BinOp::multiply_op: 
+                    return "*";
+                case BinOp::divide_op: 
+                    return "/";
+                case BinOp::modulo_op: 
+                    return "%";
+                case BinOp::lessthan_op: 
+                    return "<";
+                case BinOp::greaterthan_op: 
+                    return ">";
+                case BinOp::lessequal_op: 
+                    return "<=";
+                case BinOp::greaterequal_op: 
+                    return ">=";
+                case BinOp::notequal_op: 
+                    return "!=";
+                case BinOp::equalequal_op: 
+                    return "==";
+                case BinOp::and_op: 
+                    return "&&";
+                case BinOp::or_op: 
+                    return "||";
+            }
+            return "";
+        }
 
-    std::string parseDatatype(Datatype type){
-        switch(type){
-            case Datatype::int_type: 
-            return "int";
-            case Datatype::void_type: 
-            return "void";
-            case Datatype::bool_type: 
-            return "bool";
+        std::string parseDatatype(Datatype type){
+            switch(type){
+                case Datatype::int_type: 
+                    return "int";
+                case Datatype::void_type: 
+                    return "void";
+                case Datatype::bool_type: 
+                    return "bool";
+            }
+            return "";
         }
-        return "";
-    }
 
-    std::string parseUnOp(UnOp op){
-        switch(op){
-            case UnOp::minus_op: 
-            return "-";
-            case UnOp::not_op: 
-            return "!";
+        std::string parseUnOp(UnOp op){
+            switch(op){
+                case UnOp::minus_op: 
+                    return "-";
+                case UnOp::not_op: 
+                    return "!";
+            }
+            return "";
         }
-        return "";
-    }
 
-    std::string parseAssignOp(AssignOp op){
-        switch(op){
-            case AssignOp::plus_equal: 
-            return "+=";
-            case AssignOp::minus_equal: 
-            return "-=";
-            case AssignOp::equal: 
-            return "=";
+        std::string parseAssignOp(AssignOp op){
+            switch(op){
+                case AssignOp::plus_equal: 
+                    return "+=";
+                case AssignOp::minus_equal: 
+                    return "-=";
+                case AssignOp::equal: 
+                    return "=";
+            }
+            return "";
         }
-        return "";
-    }
 };
 
 class ASTProgram : public ASTNode
@@ -150,7 +150,7 @@ class ASTProgram : public ASTNode
     std::string id;
     std::vector<ASTFieldDecl *> * fdl;
     std::vector<ASTMethodDecl *> * mdl;
-public:
+    public:
     ASTProgram(std::string id, std::vector<ASTFieldDecl *> * fdl, std::vector<ASTMethodDecl *> * mdl){
         this->id = id;
         this->mdl = mdl;
@@ -166,7 +166,7 @@ public:
         return this->fdl;
     }
     ~ASTProgram() {
-        
+
     }
     void accept(Visitor * v) {
         v->visit(this);
@@ -178,7 +178,7 @@ class ASTFieldDecl : public ASTNode
     Datatype type;
     std::vector<ASTVarIdentifier *> * var_id_list;
     std::vector<ASTArrayIdentifier *> * array_id_list;
-public:
+    public:
     ASTFieldDecl(std::vector<ASTVarIdentifier *> * var_id_list, Datatype type){
         this->type = type;
         this->var_id_list = var_id_list;
@@ -199,7 +199,7 @@ public:
         return this->type;
     }
     ~ASTFieldDecl() {
-        
+
     }
     void accept(Visitor * v) {
         v->visit(this);
@@ -210,7 +210,7 @@ class ASTVarDecl : public ASTNode
 {
     Datatype type;
     std::vector<ASTVarIdentifier *> * id_list;
-public:
+    public:
     ASTVarDecl(std::vector<ASTVarIdentifier *> * id_list, Datatype type) {
         this->type = type;
         this->id_list = id_list;
@@ -222,7 +222,7 @@ public:
         return this->type;
     }
     ~ASTVarDecl() {
-        
+
     }
     void accept(Visitor * v) {
         v->visit(this);
@@ -231,20 +231,20 @@ public:
 
 class ASTIdentifier : public ASTNode 
 {
-public: 
-    ASTIdentifier() {
-        
-    }
-    ~ASTIdentifier() {
-        
-    }
-    virtual void accept(Visitor * v) = 0;
+    public: 
+        ASTIdentifier() {
+
+        }
+        ~ASTIdentifier() {
+
+        }
+        virtual void accept(Visitor * v) = 0;
 };
 
 class ASTVarIdentifier : public ASTIdentifier
 {
     std::string id;
-public:
+    public:
     ASTVarIdentifier(std::string id) {
         this->id = id;
     }
@@ -252,7 +252,7 @@ public:
         return this->id;
     }
     ~ASTVarIdentifier() {
-        
+
     }
     void accept(Visitor * v) {
         v->visit(this);
@@ -263,7 +263,7 @@ class ASTArrayIdentifier : public ASTIdentifier
 {
     std::string id;
     int size;
-public:
+    public:
     ASTArrayIdentifier(std::string id, int size) {
         this->id = id;
         this->size = size;      
@@ -275,7 +275,7 @@ public:
         return this->size;
     }
     ~ASTArrayIdentifier() {
-        
+
     }
     void accept(Visitor * v) {
         v->visit(this);
@@ -288,7 +288,7 @@ class ASTMethodDecl : public ASTNode
     Datatype returnType;
     std::vector<ASTTypeIdentifier *> * arguments;
     ASTBlockStatement * block;
-public:
+    public:
     ASTMethodDecl(std::string id, Datatype returnType, std::vector<ASTTypeIdentifier *> * arguments, ASTBlockStatement * block) {
         this->id = id;
         this->returnType = returnType;
@@ -308,7 +308,7 @@ public:
         return this->block;
     }
     ~ASTMethodDecl() {
-        
+
     }
     void accept(Visitor * v) {
         v->visit(this);
@@ -319,13 +319,13 @@ class ASTTypeIdentifier : public ASTNode
 {
     std::string id;
     Datatype type;
-public:
+    public:
     ASTTypeIdentifier(std::string id, Datatype type) {
         this->id = id;
         this->type = type;
     }
     ~ASTTypeIdentifier() {
-        
+
     }
     std::string getId() {
         return this->id;
@@ -340,34 +340,34 @@ public:
 
 class ASTStatement : public ASTNode 
 {
-public:
-    ASTStatement() {
-        
-    }
-    ~ASTStatement() {
-        
-    }
-    virtual void accept(Visitor * v) = 0;
+    public:
+        ASTStatement() {
+
+        }
+        ~ASTStatement() {
+
+        }
+        virtual void accept(Visitor * v) = 0;
 };
 
 
 class ASTExpression : public ASTNode
 {
-public:
-    ASTExpression() {
-        
-    }
-    ~ASTExpression() {
-        
-    }
-    virtual void accept(Visitor * v) = 0;
+    public:
+        ASTExpression() {
+
+        }
+        ~ASTExpression() {
+
+        }
+        virtual void accept(Visitor * v) = 0;
 };
 
 class ASTBlockStatement : public ASTStatement
 {
     std::vector<ASTVarDecl *> * id_list;
     std::vector<ASTStatement *> * stmtlist;
-public:
+    public:
     ASTBlockStatement(std::vector<ASTStatement *> * stmtlist, std::vector<ASTVarDecl *> * id_list) {
         this->stmtlist = stmtlist;
         this->id_list = id_list;
@@ -379,7 +379,7 @@ public:
         return this->stmtlist;
     }
     ~ASTBlockStatement() {
-        
+
     }
     void accept(Visitor * v) {
         v->visit(this);
@@ -391,7 +391,7 @@ class ASTAssignmentStatement : public ASTStatement
     AssignOp op;
     ASTLocation * location;
     ASTExpression * expr;
-public:
+    public:
     ASTAssignmentStatement(AssignOp op, ASTLocation * location, ASTExpression * expr) {
         this->op = op;
         this->location = location;
@@ -407,7 +407,7 @@ public:
         return this->expr;
     }
     ~ASTAssignmentStatement() {
-        
+
     }
     void accept(Visitor * v) {
         v->visit(this);
@@ -416,21 +416,21 @@ public:
 
 class ASTMethodCall : public ASTStatement, public ASTExpression 
 {
-public:
-    ASTMethodCall() {
-        
-    }
-    ~ASTMethodCall() {
-        
-    }
-    virtual void accept(Visitor * v) = 0;
+    public:
+        ASTMethodCall() {
+
+        }
+        ~ASTMethodCall() {
+
+        }
+        virtual void accept(Visitor * v) = 0;
 };
 
 class ASTNormalMethod : public ASTMethodCall 
 {
     std::string id;
     std::vector<ASTExpression *> * arguments;
-public:
+    public:
     ASTNormalMethod(std::string id, std::vector<ASTExpression *> * arguments) {
         this->id = id;
         this->arguments = arguments;
@@ -442,7 +442,7 @@ public:
         return this->arguments;
     }
     ~ASTNormalMethod() {
-        
+
     }
     void accept(Visitor * v) {
         v->visit(this);
@@ -453,7 +453,7 @@ class ASTCalloutMethod : public ASTMethodCall
 {
     std::string method_name;
     std::vector<ASTCalloutArg *> * arguments;
-public:
+    public:
     ASTCalloutMethod(std::string method_name, std::vector<ASTCalloutArg *> * arguments) {
         this->method_name = method_name;
         this->arguments = arguments;
@@ -465,7 +465,7 @@ public:
         return this->arguments;
     }
     ~ASTCalloutMethod() {
-        
+
     }
     void accept(Visitor * v) {
         v->visit(this);
@@ -474,19 +474,19 @@ public:
 
 class ASTCalloutArg : public ASTExpression
 {
-public:
-    ASTCalloutArg() {
-        
-    }
-    ~ASTCalloutArg() {
-        
-    }
+    public:
+        ASTCalloutArg() {
+
+        }
+        ~ASTCalloutArg() {
+
+        }
 };
 
 class ASTStringCalloutArg : public ASTCalloutArg 
 {
     std::string argument;
-public:
+    public:
     ASTStringCalloutArg(std::string argument) {
         this->argument = argument;
     }
@@ -494,7 +494,7 @@ public:
         return this->argument;
     }
     ~ASTStringCalloutArg() {
-        
+
     }
     void accept(Visitor * v) {
         v->visit(this);
@@ -504,7 +504,7 @@ public:
 class ASTExpressionCalloutArg : public ASTCalloutArg 
 {
     ASTExpression * argument;
-public:
+    public:
     ASTExpressionCalloutArg(ASTExpression * argument) {
         this->argument = argument;
     }
@@ -512,7 +512,7 @@ public:
         return this->argument;
     }
     ~ASTExpressionCalloutArg() {
-        
+
     }
     void accept(Visitor * v) {
         v->visit(this);
@@ -524,7 +524,7 @@ class ASTIfStatement : public ASTStatement
     ASTExpression * condition;
     ASTBlockStatement * if_block;
     ASTBlockStatement * else_block;
-public:
+    public:
     ASTIfStatement(ASTExpression * condition, ASTBlockStatement * if_block, ASTBlockStatement * else_block) {
         this->condition = condition;
         this->if_block = if_block;
@@ -540,7 +540,7 @@ public:
         return this->else_block;
     }
     ~ASTIfStatement() {
-        
+
     }
     void accept(Visitor * v) {
         v->visit(this);
@@ -553,7 +553,7 @@ class ASTForStatement : public ASTStatement
     ASTExpression * init_condition;
     ASTExpression * end_condition;
     ASTBlockStatement * block;
-public:
+    public:
     ASTForStatement(ASTExpression * init_condition, ASTExpression * end_condition, ASTBlockStatement * block, std::string id) {
         this->init_condition = init_condition;
         this->end_condition = end_condition;
@@ -573,7 +573,7 @@ public:
         return this->block;
     }
     ~ASTForStatement() {
-        
+
     }
     void accept(Visitor * v) {
         v->visit(this);
@@ -583,7 +583,7 @@ public:
 class ASTReturnStatement : public ASTStatement
 {
     ASTExpression * expr;
-public:
+    public:
     ASTReturnStatement(ASTExpression * expr) {
         this->expr = expr;
     }
@@ -591,7 +591,7 @@ public:
         return this->expr;
     }
     ~ASTReturnStatement() {
-        
+
     }
     void accept(Visitor * v) {
         v->visit(this);
@@ -600,48 +600,48 @@ public:
 
 class ASTContinueStatement : public ASTStatement
 {
-public:
-    ASTContinueStatement() {
-        
-    }
-    ~ASTContinueStatement() {
-        
-    }
-    void accept(Visitor * v) {
-        v->visit(this);
-    }
+    public:
+        ASTContinueStatement() {
+
+        }
+        ~ASTContinueStatement() {
+
+        }
+        void accept(Visitor * v) {
+            v->visit(this);
+        }
 };
 
 class ASTBreakStatement : public ASTStatement
 {
-public:
-    ASTBreakStatement() {
-        
-    }
-    ~ASTBreakStatement() {
-        
-    }
-    void accept(Visitor * v) {
-        v->visit(this);
-    }
+    public:
+        ASTBreakStatement() {
+
+        }
+        ~ASTBreakStatement() {
+
+        }
+        void accept(Visitor * v) {
+            v->visit(this);
+        }
 };
 
 class ASTLocation : public ASTExpression
 {
-public:
-    ASTLocation() {
-        
-    }
-    ~ASTLocation() {
-        
-    }
-    void accept(Visitor * v) = 0;
+    public:
+        ASTLocation() {
+
+        }
+        ~ASTLocation() {
+
+        }
+        void accept(Visitor * v) = 0;
 };
 
 class ASTVarLocation : public ASTLocation 
 {
     std::string id;
-public:
+    public:
     ASTVarLocation(std::string id) {
         this->id = id;
     }
@@ -649,7 +649,7 @@ public:
         return this->id;
     }
     ~ASTVarLocation() {
-        
+
     }
     void accept(Visitor * v) {
         v->visit(this);
@@ -660,7 +660,7 @@ class ASTArrayLocation : public ASTLocation
 {
     std::string id;
     ASTExpression * index;
-public:
+    public:
     ASTArrayLocation(std::string id, ASTExpression * index) {
         this->id = id;
         this->index = index;
@@ -672,7 +672,7 @@ public:
         return this->index;
     }
     ~ASTArrayLocation() {
-        
+
     }
     void accept(Visitor * v) {
         v->visit(this);
@@ -681,20 +681,20 @@ public:
 
 class ASTLiteralExpression : public ASTExpression
 {
-public:
-    ASTLiteralExpression() {
-        
-    }
-    ~ASTLiteralExpression() {
-        
-    }
-    virtual void accept(Visitor * v) = 0;
+    public:
+        ASTLiteralExpression() {
+
+        }
+        ~ASTLiteralExpression() {
+
+        }
+        virtual void accept(Visitor * v) = 0;
 };
 
 class ASTIntegerLiteralExpression : public ASTLiteralExpression
 {
     int value;
-public:
+    public:
     ASTIntegerLiteralExpression(int value) {
         this->value = value;
     }
@@ -702,7 +702,7 @@ public:
         return this->value;
     }
     ~ASTIntegerLiteralExpression() {
-        
+
     }
     void accept(Visitor * v) {
         v->visit(this);
@@ -712,7 +712,7 @@ public:
 class ASTCharLiteralExpression : public ASTLiteralExpression
 {
     char value;
-public:
+    public:
     ASTCharLiteralExpression(char value) {
         this->value = value;
     }
@@ -720,7 +720,7 @@ public:
         return this->value;
     }
     ~ASTCharLiteralExpression() {
-        
+
     }
     void accept(Visitor * v) {
         v->visit(this);
@@ -729,36 +729,36 @@ public:
 
 class ASTTrueLiteralExpression : public ASTLiteralExpression
 {
-public:
-    ASTTrueLiteralExpression() {
-        
-    }
-    bool getValue() {
-        return true;
-    }
-    ~ASTTrueLiteralExpression() {
-        
-    }
-    void accept(Visitor * v) {
-        v->visit(this);
-    }
+    public:
+        ASTTrueLiteralExpression() {
+
+        }
+        bool getValue() {
+            return true;
+        }
+        ~ASTTrueLiteralExpression() {
+
+        }
+        void accept(Visitor * v) {
+            v->visit(this);
+        }
 };
 
 class ASTFalseLiteralExpression : public ASTLiteralExpression
 {
-public:
-    ASTFalseLiteralExpression() {
-        
-    }
-    bool getValue() {
-        return false;
-    }
-    ~ASTFalseLiteralExpression() {
-        
-    }
-    void accept(Visitor * v) {
-        v->visit(this);
-    }
+    public:
+        ASTFalseLiteralExpression() {
+
+        }
+        bool getValue() {
+            return false;
+        }
+        ~ASTFalseLiteralExpression() {
+
+        }
+        void accept(Visitor * v) {
+            v->visit(this);
+        }
 };
 
 class ASTBinaryOperationExpression : public ASTExpression
@@ -766,7 +766,7 @@ class ASTBinaryOperationExpression : public ASTExpression
     ASTExpression * left;
     ASTExpression * right;
     BinOp op;
-public:
+    public:
     ASTBinaryOperationExpression(ASTExpression * left, ASTExpression * right, BinOp op) {
         this->left = left;
         this->right = right;
@@ -782,7 +782,7 @@ public:
         return this->op;
     }
     ~ASTBinaryOperationExpression() {
-        
+
     }
     void accept(Visitor * v) {
         v->visit(this);
@@ -793,7 +793,7 @@ class ASTUnaryOperationExpression : public ASTExpression
 {
     ASTExpression * expr;
     UnOp op;
-public:
+    public:
     ASTUnaryOperationExpression(ASTExpression * expr, UnOp op) {
         this->expr = expr;
         this->op = op;
@@ -805,7 +805,7 @@ public:
         return this->op;
     }
     ~ASTUnaryOperationExpression() {
-        
+
     }
     void accept(Visitor * v) {
         v->visit(this);
