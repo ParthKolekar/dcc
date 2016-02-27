@@ -279,6 +279,5 @@ char * translateString(char * string, int size) {
 		temp++;
 	}
 	*temp = '\0';
-	std::cerr << newString << ",";
 	return newString;
 }
