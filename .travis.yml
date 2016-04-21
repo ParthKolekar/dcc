@@ -17,6 +17,7 @@ addons:
                 path: /usr/bin/llvm-config-3.4
 
 dist: trusty
+sudo: required
 
 script:
     - make 
