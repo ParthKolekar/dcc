@@ -1,6 +1,3 @@
-Multiple declaration of main method	Handled
-Check the arguments of main.		Handled
-Multiple declarations of a function	Handled
 For loop handle.
 Encode “\n” to ‘\n
 Check function -> Variable same names

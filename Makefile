@@ -1,5 +1,5 @@
 OBJ = dcc
-override CFLAGS += -O3 -flto -Wall -DYYERROR_VERBOSE -std=c++11 `llvm-config-3.4 --cppflags --libs core jit native` `llvm-config-3.4 --ldflags`
+override CFLAGS += -O3 -flto -Wall -DYYERROR_VERBOSE -std=c++11 `llvm-config --cppflags --libs all --ldflags`
 PREFIX ?= /usr/local
 BINDIR = $(PREFIX)/bin
 CXX ?= g++
@@ -29,5 +29,5 @@ all : ${OBJ}
 debug : clean
 	$(YACC) --debug  $(OBJ).y
 	$(LEX) $(OBJ).l
-	$(CXX) $(OBJ).tab.c lex.yy.c main.cpp -g -O0 -DDEBUG -std=c++11 -o $(OBJ) `llvm-config --cppflags --libs core jit native` `llvm-config --ldflags`
+	$(CXX) $(OBJ).tab.c lex.yy.c main.cpp -g -O0 -DDEBUG -std=c++11 -o $(OBJ) `llvm-config --cppflags --libs all --ldflags`
 
