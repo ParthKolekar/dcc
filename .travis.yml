@@ -10,6 +10,7 @@ addons:
             - flex
             - llvm
             - clang
+            - libedit-dev 
 
 dist: trusty
 sudo: required
