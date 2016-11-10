@@ -8,14 +8,14 @@ class program
 			{
 				int a;
 				a=50;
-				callout("printf","%d",a);
+				callout("printf","Expected (50):\nIs: %d\n",a);
 
 			}
 			a= 10;
-			callout("printf","%d",a);
+			callout("printf","Expected (10):\nIs: %d\n",a);
 
 		}	
-		callout("printf","%d",a);
+		callout("printf","Expected (0):\nIs: %d\n",a);
 		return 1;
 	}
 }

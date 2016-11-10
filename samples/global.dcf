@@ -9,6 +9,6 @@ class Program
 
         c = a + b;
 
-        callout("printf", "%d + %d = %d (15) ", a, b, c);
+        callout("printf", "%d + %d = %d (15)\n", a, b, c);
     }
 }

@@ -11,9 +11,9 @@ class Program {
             for j = 0, 2
             {
                 if (j % 2 == 0) {
-                    callout("printf", "y  ");
+                    callout("printf", "y\n");
                 } else {
-                    callout("printf", "n  ");
+                    callout("printf", "n\n");
                 }
                 j += 1;
             }

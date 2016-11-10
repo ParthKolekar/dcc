@@ -32,12 +32,14 @@ class Program
       j+=1;
 	}	
 
+    callout("printf", "Array is: (multiples of 4)\n ");
+
         
 	for j = 0, 1000 {
-            callout("printf", "%d ", y[j]);
+            callout("printf", " %d", y[j]);
             j+=1;
         }
         
-        callout("printf", " ");
+        callout("printf", "\n");
     }
 }

@@ -6,7 +6,7 @@ class Program
     {
         int j;
 
-        callout("printf", "below output should be 18 16 14 12 10 8 6 4 2 0 ");
+        callout("printf", "below output should be 18 16 14 12 10 8 6 4 2 0\n");
 
         for j = 0, 10 {
             array[j] = j*2;
@@ -19,6 +19,6 @@ class Program
             j+=1;
         }
         
-        callout("printf", " ");
+        callout("printf", "\n");
     }
 }

@@ -3,6 +3,6 @@ class Program {
   int a[0];
   
   void main() {
-    callout("printf", "expecting an error ");
+    callout("printf", "expecting an error\n");
   }
 }

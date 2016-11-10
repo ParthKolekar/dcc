@@ -2,7 +2,7 @@ class Program
 {
 	int main()
 	{
-		callout("printf","shrenikjain\n");
+		callout("printf","testing\n");
 		return 0;
 	}
 }

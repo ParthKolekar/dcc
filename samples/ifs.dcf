@@ -77,21 +77,21 @@ class Program
 
         if (2 > (3 - 5)*2)
 	{
-            callout("printf","should be here ");
+            callout("printf","should be here\n");
 
 	    if (2 > 5)
 	    {
-                callout("printf","should not be here ");
+                callout("printf","should not be here\n");
 	    }
 	    else
 	    {
-                callout("printf","[Hello World] should be here ");
+                callout("printf","[Hello World] should be here\n");
 	    }
 	} 
 
 	else 
 	{
-            callout("printf","should not be here ");
+            callout("printf","should not be here\n");
 	}
      
     }

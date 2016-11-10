@@ -1,3 +1,6 @@
+// Because we were doing a Coding competition at that time, and had to implement
+// a max subarray sum solution.
+
 class Program
 {
     int a[100];
@@ -43,11 +46,14 @@ class Program
         a[4] = -100;
         ar = maxsum (N);
 
+        callout("printf", "Array is:\n");
+
         for j = 0, N {
-            callout("printf", "%d ", a[j]);
+            callout("printf", " %d", a[j]);
             j = j+1;
         }
-        callout("printf", "%d", ar);
+
+        callout("printf", "\nMax Subarray Sum is (8): %d\n", ar);
     }
 }
 

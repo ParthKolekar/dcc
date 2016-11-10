@@ -1,8 +1,9 @@
-#include <iostream>
 #include <cstdio>
+#include <iostream>
+
 #include "AST.h"
-#include "Visitor.h"
 #include "CodeGenVisitor.h"
+#include "Visitor.h"
 
 extern "C" FILE *yyin; 
 extern "C" int yyparse(); 
@@ -32,4 +33,3 @@ int main (const int argc, const char ** argv) {
     }
     return 0;
 }
-

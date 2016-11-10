@@ -13,9 +13,9 @@ class Program
 	{
 		int n;
 		int a;
-		n = 10;
-		callout("printf","%d ",n);
+		n = 42;
+		callout("printf","Expected (42)\nIs: %d\n",n);
 		a=fibo(n);
-		callout("printf","%d ",a);
+		callout("printf","Expected (267914296)\nIs: %d\n",a);
 	}
 }

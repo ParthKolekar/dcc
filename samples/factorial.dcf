@@ -17,8 +17,8 @@ class Program {
 
     int main() {
 	    int y;
-	    y= x(4);
-                    callout("printf", "%d",y);
+	    y= x(10);
+                    callout("printf", "Expected (10! = 3628800)\nIs: %d\n",y);
             }
     
         }

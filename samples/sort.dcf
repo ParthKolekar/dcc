@@ -32,9 +32,13 @@ class Program
         a[3] = 2;
         a[4] = 3;
 		sort();
+
+		callout("printf", "Array is (0 1 2 3 4):\n");
+
+
 		for j=0, N
 		{
-			callout("printf","%d",a[j]);
+			callout("printf"," %d",a[j]);
             j = j + 1;
 		}
 

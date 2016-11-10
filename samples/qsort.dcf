@@ -65,7 +65,7 @@ class Program
         
 	length = 10; // adjust for sort length
         
-        callout("printf", "creating random array of %d elements ", length);
+        callout("printf", "creating random array of %d elements\n", length);
 
 	temp = callout("time", 0);
 
@@ -77,7 +77,7 @@ class Program
             i = i + 1;
         }
         
-        callout("printf", " before sort: ");
+        callout("printf", "\nbefore sort:\n");
 	for i = 0, length {
    	    callout ("printf", "%d ", A[i]);
         i = i + 1; 
@@ -85,7 +85,7 @@ class Program
         
         quicksort (0, length - 1);
 
-        callout("printf", " after sort ");
+        callout("printf", "\nafter sort\n");
 	for i = 0, length {
 	  callout ("printf", "%d ", A[i]);
     i = i + 1; 

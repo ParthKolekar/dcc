@@ -1,0 +1,16 @@
+class Program { 
+	int array1[10], variable1, variable2;
+	int variable3, array2[10];
+
+	void main() {
+		int i;
+		variable1 = 10;
+		array1[1] = 10;
+		callout("printf", "Expected (10):\nIs:%d\n", variable1);
+		callout("printf", "Expected (0 10 0 0):\nIs: ", variable1);
+		for i = 0,4 {
+			callout("printf", "%d ", array1[i]);
+			i = i+1;
+		}
+	}
+}

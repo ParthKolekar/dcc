@@ -35,5 +35,3 @@ Run Instructions
 ----------------
 
 `dcc filename` prints out the llvm for file on stdout, and errors if any on stderr.
-
-
