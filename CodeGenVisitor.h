@@ -1,22 +1,22 @@
 #ifndef _CodeGenVisitor_H
 #define _CodeGenVisitor_H
 
-#include <llvm/Analysis/Verifier.h>
+#include <llvm/IR/Verifier.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Type.h>
-#include <llvm/PassManager.h>
+#include <llvm/IR/LegacyPassManager.h>
+#include <llvm/IR/LegacyPassManagers.h>
+#include <llvm/IR/IRPrintingPasses.h>
+#include <llvm/AsmParser/Parser.h> 
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/CallingConv.h>
 #include <llvm/Bitcode/ReaderWriter.h>
-#include <llvm/Analysis/Verifier.h>
-#include <llvm/Assembly/PrintModulePass.h>
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
-#include <llvm/ExecutionEngine/JIT.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Pass.h>
 #include <llvm/ADT/SmallVector.h>
@@ -56,9 +56,9 @@ class CodeGenVisitor : public Visitor
             block = symbolTable.topBlock();
             symbolTable.popBlock();
             llvm::ReturnInst::Create(llvm::getGlobalContext(), block);
-            llvm::verifyModule(*module, llvm::PrintMessageAction);
-            llvm::PassManager PM;
-            PM.add(llvm::createPrintModulePass(&llvm::outs()));
+            llvm::verifyModule(*module);
+            llvm::legacy::PassManager PM;
+            PM.add(llvm::createPrintModulePass(llvm::outs()));
             PM.run(*module);
         }
         llvm::Value * ErrorHandler(const char * error) {
@@ -175,9 +175,9 @@ class CodeGenVisitor : public Visitor
             llvm::BasicBlock *block = llvm::BasicBlock::Create(llvm::getGlobalContext(), "entry", function, 0); 
             symbolTable.pushBlock(block);
             if (node->getArguments()) {
-                auto it2 = function->arg_begin();
+                llvm::Function::arg_iterator it2 = function->arg_begin();
                 for (auto it = (node->getArguments())->begin(); it != (node->getArguments())->end(); it++, it2++) {
-                    llvm::Value * arg = it2;
+                    llvm::Value * arg = &(*it2);
                     arg->setName((*it)->getId());
                     llvm::AllocaInst * allocaInst = NULL;
                     allocaInst = new llvm::AllocaInst(llvm::Type::getInt64Ty(llvm::getGlobalContext()), (*it)->getId(), symbolTable.topBlock());
