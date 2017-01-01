@@ -1,6 +1,2 @@
-For loop handle.
-Encode “\n” to ‘\n
-Check function -> Variable same names
-Set all initial variables to 0
+Encode "\n" to '\n' - partially done
 Shortcircuiting
-Check types in if, for and return, and other things too.
