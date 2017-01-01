@@ -1,0 +1,42 @@
+class Program {
+	int isPrime(int n) {
+		// Naive isPrime
+		int i;
+		if (n <= 1) {
+			return false;
+		}
+		if (n <=3) {
+			return true;
+		}
+		if ((n % 2) == 0 || (n % 3) == 0) {
+			return false;
+		}
+		for i = 2,n - 1 {
+			if ((n % i) == 0) {
+				return false;
+			}
+			i = i + 1;
+		}
+		return true;
+	}
+
+	void main() {
+		int a, b, c, d, e, f, g, h;
+		a = 10;
+		b = 21;
+		c = 35;
+		d = 9871;
+		e = 99992;
+		f = 99991;
+		g = 42;
+		h = 17389;
+		callout("printf", "Expected: (0)\t Is: %d\n", isPrime(a));
+		callout("printf", "Expected: (0)\t Is: %d\n", isPrime(b));
+		callout("printf", "Expected: (0)\t Is: %d\n", isPrime(c));
+		callout("printf", "Expected: (1)\t Is: %d\n", isPrime(d));
+		callout("printf", "Expected: (0)\t Is: %d\n", isPrime(e));
+		callout("printf", "Expected: (1)\t Is: %d\n", isPrime(f));
+		callout("printf", "Expected: (0)\t Is: %d\n", isPrime(g));
+		callout("printf", "Expected: (1)\t Is: %d\n", isPrime(h));
+	}
+}
