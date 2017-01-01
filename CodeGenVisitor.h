@@ -1,7 +1,6 @@
 #ifndef _CodeGenVisitor_H
 #define _CodeGenVisitor_H
 
-#include <llvm/Bitcode/ReaderWriter.h>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/Function.h>
@@ -14,6 +13,7 @@
 #include <llvm/IR/Type.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/Pass.h>
+#include <llvm/Support/raw_ostream.h>
 
 #include <cstdlib>
 #include <iostream>
