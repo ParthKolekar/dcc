@@ -17,6 +17,9 @@ Decaf specifications are as in the given decaf manual. A few notable edits were 
 - Boolean is zero extended to i64 signed integer.
 - The special escape characters are not excaped in strings.
 
+Decaf specification changes over the years, the implementation is done strictly for MIT '10 specification which is also 
+provided with the source. With the above mentioned changes.
+
 dcc
 ---
 
